@@ -59,7 +59,7 @@ function updateDashboard(data) {
         document.getElementById('isol').textContent = data.power.Isol?.toFixed(2) || '--';
         document.getElementById('vbat').textContent = data.power.Vbat?.toFixed(2) || '--';
         document.getElementById('ibat').textContent = data.power.Ibat?.toFixed(2) || '--';
-        document.getElementById('isCharging').textContent = data.power.is_charging ? "Yes" : "No";
+        document.getElementById('isCharging').textContent = data.power.is_charging ? "🟢" : "🔴";
     }
 
     // Update the Chart
