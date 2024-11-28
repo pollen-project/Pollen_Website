@@ -6,48 +6,64 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
 }).addTo(map);
 
-// Function to fetch data from the server
-async function fetchData() {
-    try {
-        const response = await fetch('data.json');
-        const data = await response.json();
+// MQTT client setup
+const brokerURL = "ws://mqtt.eclipseprojects.io/mqtt"; // WebSocket URL for the MQTT broker
+const topic = "/pollen"; // Topic to subscribe to
 
-        // Update Sensor Data
-        document.getElementById('temp1').textContent = data.dht22[0].temperature.toFixed(1);
-        document.getElementById('humidity1').textContent = data.dht22[0].humidity.toFixed(1);
-        document.getElementById('temp2').textContent = data.dht22[1].temperature.toFixed(1);
-        document.getElementById('humidity2').textContent = data.dht22[1].humidity.toFixed(1);
+// Connect to the MQTT broker
+const client = mqtt.connect(brokerURL);
 
-        // Update GPS Data
-        const { latitude, longitude, altitude, speed, satellites_in_view, satellites_connected } = data.gps;
-        document.getElementById('latitude').textContent = latitude.toFixed(6);
-        document.getElementById('longitude').textContent = longitude.toFixed(6);
-        document.getElementById('altitude').textContent = altitude.toFixed(1);
-        document.getElementById('speed').textContent = speed.toFixed(1);
-        document.getElementById('satellites-view').textContent = satellites_in_view;
-        document.getElementById('satellites-connected').textContent = satellites_connected;
+// Handle connection success
+client.on('connect', () => {
+    console.log("Connected to MQTT broker");
+    client.subscribe(topic, (err) => {
+        if (err) {
+            console.error("Failed to subscribe to topic:", err);
+        } else {
+            console.log(`Subscribed to topic: ${topic}`);
+        }
+    });
+});
 
-        // Update map
-        marker.setLatLng([latitude, longitude]);
-        map.setView([latitude, longitude], 13);
+// Handle incoming messages
+client.on('message', (topic, message) => {
+    console.log(`Received message from topic ${topic}:`, message.toString());
+    const data = JSON.parse(message.toString()); // Assuming the data is sent in JSON format
+    updateDashboard(data); // Update the dashboard with the received data
+});
 
-        // Update Power Data
-        updatePowerData(data);
-
-        // Update Chart with data
-        updateChartData(data);
-    } catch (error) {
-        console.error('Error fetching data:', error);
+// Function to update the dashboard
+function updateDashboard(data) {
+    // Update Sensor Data
+    if (data.dht22) {
+        document.getElementById('temp1').textContent = data.dht22[0]?.temperature?.toFixed(1) || '--';
+        document.getElementById('humidity1').textContent = data.dht22[0]?.humidity?.toFixed(1) || '--';
+        document.getElementById('temp2').textContent = data.dht22[1]?.temperature?.toFixed(1) || '--';
+        document.getElementById('humidity2').textContent = data.dht22[1]?.humidity?.toFixed(1) || '--';
     }
-}
 
-// Update Power Data
-function updatePowerData(data) {
-    document.getElementById('vsol').textContent = data.power.Vsol.toFixed(2);
-    document.getElementById('isol').textContent = data.power.Isol.toFixed(2);
-    document.getElementById('vbat').textContent = data.power.Vbat.toFixed(2);
-    document.getElementById('ibat').textContent = data.power.Ibat.toFixed(2);
-    document.getElementById('isCharging').textContent = data.power.is_charging ? "Yes" : "No";
+    // Update GPS Data
+    if (data.gps) {
+        const { latitude, longitude, altitude, speed, satellites_in_view, satellites_connected } = data.gps;
+        document.getElementById('latitude').textContent = latitude?.toFixed(6) || '--';
+        document.getElementById('longitude').textContent = longitude?.toFixed(6) || '--';
+        document.getElementById('altitude').textContent = altitude?.toFixed(1) || '--';
+        document.getElementById('speed').textContent = speed?.toFixed(1) || '--';
+        document.getElementById('satellites-view').textContent = satellites_in_view || '--';
+        document.getElementById('satellites-connected').textContent = satellites_connected || '--';
+    }
+
+    // Update Power Data
+    if (data.power) {
+        document.getElementById('vsol').textContent = data.power.Vsol?.toFixed(2) || '--';
+        document.getElementById('isol').textContent = data.power.Isol?.toFixed(2) || '--';
+        document.getElementById('vbat').textContent = data.power.Vbat?.toFixed(2) || '--';
+        document.getElementById('ibat').textContent = data.power.Ibat?.toFixed(2) || '--';
+        document.getElementById('isCharging').textContent = data.power.is_charging ? "Yes" : "No";
+    }
+
+    // Update the Chart
+    updateChartData(data);
 }
 
 // Initialize Chart.js
@@ -151,14 +167,14 @@ function updateChartData(data) {
     const now = new Date().toLocaleTimeString();
 
     // Extract Box, Outside, and Power Data
-    const boxTemp = data.dht22[0].temperature;
-    const boxHumidity = data.dht22[0].humidity;
-    const outsideTemp = data.dht22[1].temperature;
-    const outsideHumidity = data.dht22[1].humidity;
-    const vsol = data.power.Vsol;
-    const isol = data.power.Isol;
-    const vbat = data.power.Vbat;
-    const ibat = data.power.Ibat;
+    const boxTemp = data.dht22[0]?.temperature || null;
+    const boxHumidity = data.dht22[0]?.humidity || null;
+    const outsideTemp = data.dht22[1]?.temperature || null;
+    const outsideHumidity = data.dht22[1]?.humidity || null;
+    const vsol = data.power?.Vsol || null;
+    const isol = data.power?.Isol || null;
+    const vbat = data.power?.Vbat || null;
+    const ibat = data.power?.Ibat || null;
 
     // Update Chart
     sensorChart.data.labels.push(now);
@@ -210,6 +226,5 @@ function exportData() {
 // Attach event listener to the Export Data button
 document.getElementById('exportDataButton').addEventListener('click', exportData);
 
-// Fetch data every 5 seconds
-setInterval(fetchData, 5000);
+// Fetch initial data and start real-time updates
 fetchData();
