@@ -47,59 +47,41 @@ h1, h2, p {
     padding: 20px;
 }
 
-/* Card Grid */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-/* Glassy Cards */
-.card {
+/* Card Styles */
+.card, .power-card, .gps-card {
+    max-width: 100%;
+    margin: 0 auto 20px auto;
+    padding: 20px;
+    text-align: center;
     backdrop-filter: blur(15px);
     background: rgba(255, 255, 255, 0.2);
     border-radius: 15px;
-    padding: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.power-card {
-    padding: 20px; /* Increased padding */
-    max-width: 100%;
-    margin: 20px auto;
-    text-align: left;
-    box-sizing: border-box;
-    background: rgba(255, 255, 255, 0.2); /* Match the style of other cards */
-    border-radius: 15px; /* Rounded corners */
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* Consistent shadow */
-    backdrop-filter: blur(15px); /* Glassy effect */
-    border: 1px solid rgba(255, 255, 255, 0.2);
+.card h2, .power-card h2, .gps-card h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 15px;
 }
 
-.power-grid {
+/* Grid Layout for Card Content */
+.sensor-grid, .gps-grid, .power-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Two columns for voltage and current */
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
-    align-items: start; /* Align grid items at the start */
-    justify-content: center; /* Center the grid horizontally */
-    margin-bottom: 15px; /* Add some space between the grid and the "Is Charging" text */
+    justify-content: center;
+    margin-bottom: 15px;
 }
 
-.power-grid p {
+.sensor-grid p, .gps-grid p, .power-grid p {
     font-size: 1.1rem;
     line-height: 1.6;
     color: #f9f9f9;
     margin: 0;
-    text-align: center; /* Center text in each grid cell */
-}
-
-.power-card h2 {
-    margin-bottom: 15px; /* Add space below the heading */
     text-align: center;
-    font-size: 1.5rem;
-    color: #ffffff;
-    font-weight: bold;
 }
 
 .is-charging {
@@ -108,59 +90,36 @@ h1, h2, p {
     font-weight: bold;
     color: #f9f9f9;
     margin: 0;
-    grid-column: span 2; /* Make "Is Charging" span across both columns */
-    margin-top: 15px; /* Add more space above the "Is Charging" text */
+    grid-column: span 2;
+    margin-top: 15px;
 }
 
-.card h2 {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #fff;
-    margin-bottom: 10px;
-}
-
-.card p {
-    font-size: 1.2rem;
-    line-height: 1.5;
-    color: #f9f9f9;
-}
-
-/* Chart Section */
-.chart-container {
-    margin-top: 30px;
-    padding: 20px;
+/* Chart Section Inside Sensor and Power Cards */
+.card .chart-container, .power-card .chart-container {
+    margin-top: 20px;
+    padding: 0 10px;
     text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     align-items: center;
-    max-width: 100%; /* Match the container width */
     width: 100%;
     box-sizing: border-box;
 }
 
-#sensorChart {
+.card #sensorChart, .power-card #powerChart {
     width: 100% !important;
     height: auto !important;
-    max-width: 1000px; /* Ensure chart doesn't exceed container width */
-    aspect-ratio: 2 / 1; /* Keep a consistent aspect ratio */
+    max-width: none;
+    aspect-ratio: 16 / 9;
 }
 
-/* Map Section */
-.map-container {
-    margin-top: 30px;
-}
-
-#map {
-    height: 500px;
-    width: 100%;
-    border-radius: 15px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-/* Export Button */
-.export-button {
+/* Export Button Styling for Both Cards */
+.card .export-button, .power-card .export-button {
     margin-top: 20px;
+    margin-bottom: 20px;
     padding: 10px 20px;
     font-size: 1rem;
     font-weight: bold;
@@ -173,14 +132,67 @@ h1, h2, p {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.export-button:hover {
+.power-card .export-button {
+    background: linear-gradient(135deg, #f2994a, #f2c94c);
+}
+
+.card .export-button:hover, .power-card .export-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
 }
 
-.export-button:active {
+.card .export-button:active, .power-card .export-button:active {
     transform: translateY(1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* GPS Data Card */
+.gps-card {
+    max-width: 100%;
+    margin: 0 auto 20px auto;
+    padding: 20px;
+    text-align: center;
+    backdrop-filter: blur(15px);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gps-card h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 15px;
+}
+
+.gps-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.gps-grid p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #f9f9f9;
+    margin: 0;
+    text-align: center;
+}
+
+/* Map Styling */
+.gps-card .map-container {
+    margin-top: 20px;
+}
+
+.gps-card #map {
+    height: 400px;
+    width: 100%;
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 /* Footer */
@@ -213,13 +225,8 @@ footer a:hover {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Ensure all cards align properly and scale down consistently */
+/* Ensure All Cards Scale Down Properly */
 .card, .chart-container {
     max-width: 100%;
     box-sizing: border-box;
 }
-
-.chart-container {
-    margin-bottom: 20px;
-}
-

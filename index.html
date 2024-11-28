@@ -23,26 +23,20 @@
             <!-- Sensor Data -->
             <div class="card">
                 <h2>Sensor Data</h2>
-                <br>
-                <p><strong>Box Temperature:</strong> <span id="temp1">--</span> °C</p>
-                <p><strong>Humidity:</strong> <span id="humidity1">--</span> %</p>
-                <br>
-                <p><strong>Outside Temperature:</strong> <span id="temp2">--</span> °C</p>
-                <p><strong>Humidity:</strong> <span id="humidity2">--</span> %</p>
+                <div class="sensor-grid">
+                    <p>Box Temperature: <span id="temp1">--</span> °C</p>
+                    <p>Humidity: <span id="humidity1">--</span> %</p>
+                    <p>Outside Temperature: <span id="temp2">--</span> °C</p>
+                    <p>Outside Humidity: <span id="humidity2">--</span> %</p>
+                </div>
+                <!-- Historical Data Charts -->
+                <div class="chart-container">
+                    <h3 style="text-align: center;">Historical Data for Temperature & Humidity</h3>
+                    <canvas id="sensorChart"></canvas>
+                    <button id="exportDataButton" class="export-button">Export Data to CSV</button>
+                </div>
             </div>
-    
-            <!-- GPS Data -->
-            <div class="card">
-                <h2>GPS Data</h2>
-                <p><strong>Latitude:</strong> <span id="latitude">--</span></p>
-                <p><strong>Longitude:</strong> <span id="longitude">--</span></p>
-                <p><strong>Altitude:</strong> <span id="altitude">--</span> m</p>
-                <p><strong>Speed:</strong> <span id="speed">--</span> km/h</p>
-                <p><strong>Satellites in View:</strong> <span id="satellites-view">--</span></p>
-                <p><strong>Satellites Connected:</strong> <span id="satellites-connected">--</span></p>
-            </div>
-        </div>
-    
+
             <!-- Power Data Card -->
             <div class="power-card">
                 <h2>Power Data</h2>
@@ -53,19 +47,30 @@
                     <p>Battery Current (Ibat): <span id="ibat">--</span> A</p>
                 </div>
                 <p class="is-charging">Is Charging: <span id="isCharging">🔴</span></p>
+                <!-- Historical Data Chart -->
+                <div class="chart-container">
+                    <h3 style="text-align: center;">Historical Data for Power</h3>
+                    <canvas id="powerChart"></canvas>
+                    <button id="exportPowerDataButton" class="export-button">Export Power Data to CSV</button>
+                </div>
             </div>
 
-            <!-- Historical Data Charts -->
-            <div class="chart-container card">
-                <h2 style="text-align: center;">Historical Data for Temperature & Humidity</h2>
-                <canvas id="sensorChart"></canvas>
-                <button id="exportDataButton" class="export-button">Export Data to CSV</button>
+            <!-- GPS Data Card -->
+            <div class="gps-card">
+                <h2>GPS Data</h2>
+                <div class="gps-grid">
+                    <p>Latitude: <span id="latitude">--</span></p>
+                    <p>Longitude: <span id="longitude">--</span></p>
+                    <p>Altitude: <span id="altitude">--</span> m</p>
+                    <p>Speed: <span id="speed">--</span> km/h</p>
+                    <p>Satellites in View: <span id="satellites-view">--</span></p>
+                    <p>Satellites Connected: <span id="satellites-connected">--</span></p>
+                </div>
+                <!-- Map -->
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
             </div>
-    
-        <!-- Map -->
-        <div class="map-container">
-            <h2 style="text-align: center; color: #fff; text-shadow: 0px 1px 5px rgba(0, 0, 0, 0.5);">Device Location</h2>
-            <div id="map"></div>
         </div>
     </div>
 
