@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Pollen Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header fade-in">
+        <h1>IoT Pollen Dashboard</h1>
+        <p>Real-Time Pollen & Data Monitoring</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Cards -->
+        <div class="grid">
+            <!-- Sensor Data -->
+            <div class="card">
+                <h2>Sensor Data</h2>
+                <br>
+                <p><strong>Box Temperature:</strong> <span id="temp1">--</span> °C</p>
+                <p><strong>Humidity:</strong> <span id="humidity1">--</span> %</p>
+                <br>
+                <p><strong>Outside Temperature:</strong> <span id="temp2">--</span> °C</p>
+                <p><strong>Humidity:</strong> <span id="humidity2">--</span> %</p>
+            </div>
+    
+            <!-- GPS Data -->
+            <div class="card">
+                <h2>GPS Data</h2>
+                <p><strong>Latitude:</strong> <span id="latitude">--</span></p>
+                <p><strong>Longitude:</strong> <span id="longitude">--</span></p>
+                <p><strong>Altitude:</strong> <span id="altitude">--</span> m</p>
+                <p><strong>Speed:</strong> <span id="speed">--</span> km/h</p>
+                <p><strong>Satellites in View:</strong> <span id="satellites-view">--</span></p>
+                <p><strong>Satellites Connected:</strong> <span id="satellites-connected">--</span></p>
+            </div>
+        </div>
+    
+            <!-- Power Data Card -->
+            <div class="power-card">
+                <h2>Power Data</h2>
+                <div class="power-grid">
+                    <p>Solar Voltage (Vsol): <span id="vsol">--</span> V</p>
+                    <p>Solar Current (Isol): <span id="isol">--</span> A</p>
+                    <p>Battery Voltage (Vbat): <span id="vbat">--</span> V</p>
+                    <p>Battery Current (Ibat): <span id="ibat">--</span> A</p>
+                </div>
+                <p class="is-charging">Is Charging: <span id="isCharging">No</span></p>
+            </div>
+
+            <!-- Historical Data Charts -->
+            <div class="chart-container card">
+                <h2 style="text-align: center;">Historical Data for Temperature & Humidity</h2>
+                <canvas id="sensorChart"></canvas>
+                <button id="exportDataButton" class="export-button">Export Data to CSV</button>
+            </div>
+    
+        <!-- Map -->
+        <div class="map-container">
+            <h2 style="text-align: center; color: #fff; text-shadow: 0px 1px 5px rgba(0, 0, 0, 0.5);">Device Location</h2>
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 IoT Pollen Dashboard. Built with 💚 by 
+            <a href="https://www.linkedin.com/in/maurits-puggaard-4095351b0/" target="_blank">Maurits Puggaard</a> 
+            & 
+            <a href="https://www.linkedin.com/in/botond-horvath/" target="_blank">Botond Horváth</a>.
+        </p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="scripts.js"></script>
+</body>
+</html>

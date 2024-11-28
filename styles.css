@@ -1,0 +1,225 @@
+/* Global Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #a7ff6d, #2f80ed, #378456, #56ab2f);
+    background-size: 400% 400%;
+    animation: backgroundMove 10s infinite alternate;
+    color: #fff;
+}
+
+@keyframes backgroundMove {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+h1, h2, p {
+    margin: 0;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    padding: 20px 0;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.6), 0 0 10px rgba(86, 204, 242, 0.8);
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.header p {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0px 1px 5px rgba(0, 0, 0, 0.4);
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+/* Card Grid */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Glassy Cards */
+.card {
+    backdrop-filter: blur(15px);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.power-card {
+    padding: 20px; /* Increased padding */
+    max-width: 100%;
+    margin: 20px auto;
+    text-align: left;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.2); /* Match the style of other cards */
+    border-radius: 15px; /* Rounded corners */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* Consistent shadow */
+    backdrop-filter: blur(15px); /* Glassy effect */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.power-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two columns for voltage and current */
+    gap: 15px;
+    align-items: start; /* Align grid items at the start */
+    justify-content: center; /* Center the grid horizontally */
+    margin-bottom: 15px; /* Add some space between the grid and the "Is Charging" text */
+}
+
+.power-grid p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #f9f9f9;
+    margin: 0;
+    text-align: center; /* Center text in each grid cell */
+}
+
+.power-card h2 {
+    margin-bottom: 15px; /* Add space below the heading */
+    text-align: center;
+    font-size: 1.5rem;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.is-charging {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #f9f9f9;
+    margin: 0;
+    grid-column: span 2; /* Make "Is Charging" span across both columns */
+    margin-top: 15px; /* Add more space above the "Is Charging" text */
+}
+
+.card h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.card p {
+    font-size: 1.2rem;
+    line-height: 1.5;
+    color: #f9f9f9;
+}
+
+/* Chart Section */
+.chart-container {
+    margin-top: 30px;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 100%; /* Match the container width */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#sensorChart {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 1000px; /* Ensure chart doesn't exceed container width */
+    aspect-ratio: 2 / 1; /* Keep a consistent aspect ratio */
+}
+
+/* Map Section */
+.map-container {
+    margin-top: 30px;
+}
+
+#map {
+    height: 500px;
+    width: 100%;
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Export Button */
+.export-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ffffff;
+    background: linear-gradient(135deg, #2f80ed, #56ccf2);
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.export-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+}
+
+.export-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px 0;
+    background: rgba(0, 0, 0, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+}
+
+footer a {
+    color: #a4fba6;
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 1s ease forwards;
+    opacity: 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ensure all cards align properly and scale down consistently */
+.card, .chart-container {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.chart-container {
+    margin-bottom: 20px;
+}
+
