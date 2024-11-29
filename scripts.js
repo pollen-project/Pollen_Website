@@ -82,10 +82,38 @@ const sensorChart = new Chart(ctx, {
     data: {
         labels: [], // Time labels
         datasets: [
-            { label: 'Box Temperature (°C)', data: [], borderColor: 'rgba(86, 204, 242, 1)', borderWidth: 2, fill: false },
-            { label: 'Box Humidity (%)', data: [], borderColor: 'rgba(242, 204, 86, 1)', borderWidth: 2, fill: false },
-            { label: 'Outside Temperature (°C)', data: [], borderColor: 'rgba(86, 255, 86, 1)', borderWidth: 2, fill: false },
-            { label: 'Outside Humidity (%)', data: [], borderColor: 'rgba(204, 86, 242, 1)', borderWidth: 2, fill: false },
+            {
+                label: 'Box Temperature (°C)',
+                data: [],
+                borderColor: 'rgba(86, 204, 242, 1)', // Blue
+                borderWidth: 2,
+                fill: false,
+                yAxisID: 'y-temp', // Bind this dataset to the temperature axis
+            },
+            {
+                label: 'Box Humidity (%)',
+                data: [],
+                borderColor: 'rgba(242, 204, 86, 1)', // Yellow
+                borderWidth: 2,
+                fill: false,
+                yAxisID: 'y-humidity', // Bind this dataset to the humidity axis
+            },
+            {
+                label: 'Outside Temperature (°C)',
+                data: [],
+                borderColor: 'rgba(86, 255, 86, 1)', // Green
+                borderWidth: 2,
+                fill: false,
+                yAxisID: 'y-temp', // Bind this dataset to the temperature axis
+            },
+            {
+                label: 'Outside Humidity (%)',
+                data: [],
+                borderColor: 'rgba(204, 86, 242, 1)', // Purple
+                borderWidth: 2,
+                fill: false,
+                yAxisID: 'y-humidity', // Bind this dataset to the humidity axis
+            },
         ],
     },
     options: {
@@ -97,8 +125,31 @@ const sensorChart = new Chart(ctx, {
             },
         },
         scales: {
-            x: { title: { display: true, text: 'Time', color: '#ffffff' }, ticks: { color: '#ffffff' } },
-            y: { title: { display: true, text: 'Values', color: '#ffffff' }, ticks: { color: '#ffffff' } },
+            x: {
+                title: { display: true, text: 'Time', color: '#ffffff' },
+                ticks: { color: '#ffffff' },
+            },
+            y: { // Default Y-axis (disable it)
+                display: false, // Completely hide the default Y-axis
+            },
+            'y-temp': { // Temperature Y-axis
+                type: 'linear',
+                position: 'left',
+                title: { display: true, text: 'Temperature (°C)', color: '#ffffff' },
+                ticks: { color: '#ffffff' },
+                grid: {
+                    drawOnChartArea: true, // Enable gridlines for temperature
+                },
+            },
+            'y-humidity': { // Humidity Y-axis
+                type: 'linear',
+                position: 'right',
+                title: { display: true, text: 'Humidity (%)', color: '#ffffff' },
+                ticks: { color: '#ffffff' },
+                grid: {
+                    drawOnChartArea: false, // Disable gridlines for humidity
+                },
+            },
         },
     },
 });
@@ -110,11 +161,48 @@ const powerChart = new Chart(powerCtx, {
     data: {
         labels: [], // Time labels
         datasets: [
-            { label: 'Solar Voltage (V)', data: [], borderColor: 'rgba(255, 165, 0, 1)', borderWidth: 2, fill: false },
-            { label: 'Solar Current (mA)', data: [], borderColor: 'rgba(255, 69, 0, 1)', borderWidth: 2, fill: false },
-            { label: 'Battery Voltage (V)', data: [], borderColor: 'rgba(75, 0, 130, 1)', borderWidth: 2, fill: false },
-            { label: 'Battery Current (mA)', data: [], borderColor: 'rgba(148, 0, 211, 1)', borderWidth: 2, fill: false },
-            { label: 'Is Charging (1 = Yes, 0 = No)', data: [], borderColor: 'rgba(86, 204, 242, 1)', borderWidth: 2, fill: false },
+            {
+                label: 'Solar Voltage (V)',
+                data: [],
+                borderColor: 'rgba(255, 165, 0, 1)', // Orange
+                borderWidth: 2,
+                fill: false,
+                yAxisID: 'y-voltage', // Bind this dataset to the voltage axis
+            },
+            {
+                label: 'Battery Voltage (V)',
+                data: [],
+                borderColor: 'rgba(75, 0, 130, 1)', // Indigo
+                borderWidth: 2,
+                fill: false,
+                yAxisID: 'y-voltage', // Bind this dataset to the voltage axis
+            },
+            {
+                label: 'Solar Current (mA)',
+                data: [],
+                borderColor: 'rgba(255, 69, 0, 1)', // Red
+                borderWidth: 2,
+                fill: false,
+                yAxisID: 'y-current', // Bind this dataset to the current axis
+            },
+            {
+                label: 'Battery Current (mA)',
+                data: [],
+                borderColor: 'rgba(148, 0, 211, 1)', // Violet
+                borderWidth: 2,
+                fill: false,
+                yAxisID: 'y-current', // Bind this dataset to the current axis
+            },
+            {
+                label: 'Is Charging (1 = Yes, 0 = No)',
+                data: [],
+                borderColor: 'rgba(86, 204, 242, 1)', // Blue
+                borderWidth: 2,
+                fill: false,
+                pointStyle: 'circle',
+                pointRadius: 3,
+                yAxisID: 'y-current', // Bind this dataset to the current axis
+            },
         ],
     },
     options: {
@@ -126,8 +214,31 @@ const powerChart = new Chart(powerCtx, {
             },
         },
         scales: {
-            x: { title: { display: true, text: 'Time', color: '#ffffff' }, ticks: { color: '#ffffff' } },
-            y: { title: { display: true, text: 'Values', color: '#ffffff' }, ticks: { color: '#ffffff' } },
+            x: {
+                title: { display: true, text: 'Time', color: '#ffffff' },
+                ticks: { color: '#ffffff' },
+            },
+            y: { // Default Y-axis (disable it)
+                display: false, // Completely hide the default Y-axis
+            },
+            'y-voltage': { // Voltage Y-axis
+                type: 'linear',
+                position: 'left',
+                title: { display: true, text: 'Voltage (V)', color: '#ffffff' },
+                ticks: { color: '#ffffff' },
+                grid: {
+                    drawOnChartArea: true, // Enable gridlines for voltage
+                },
+            },
+            'y-current': { // Current and Is Charging Y-axis
+                type: 'linear',
+                position: 'right',
+                title: { display: true, text: 'Current (mA) & Is Charging (0/1)', color: '#ffffff' },
+                ticks: { color: '#ffffff' },
+                grid: {
+                    drawOnChartArea: false, // Disable gridlines for current
+                },
+            },
         },
     },
 });
