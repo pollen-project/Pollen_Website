@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gps/dist/gps.min.js"></script>
 </head>
 <body>
     <!-- Header -->
@@ -67,8 +68,9 @@
                     <p>Longitude: <span id="longitude">--</span></p>
                     <p>Altitude: <span id="altitude">--</span> m</p>
                     <p>Speed: <span id="speed">--</span> km/h</p>
-                    <p>Satellites in View: <span id="satellites-view">--</span></p>
-                    <p>Satellites Connected: <span id="satellites-connected">--</span></p>
+                    <div id="satellites-connected-container">
+                        Satellites Connected: <span id="satellites-connected">--</span>
+                    </div>
                 </div>
                 <!-- Map -->
                 <div class="map-container">

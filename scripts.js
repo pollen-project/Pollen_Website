@@ -6,6 +6,12 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
 }).addTo(map);
 
+// Include GPS.js
+const gps = new GPS();
+
+// Variables to track satellites
+let satellitesConnected = 0;
+
 // MQTT client setup and connection
 const brokerURL = "ws://mqtt.eclipseprojects.io/mqtt"; // WebSocket URL for the MQTT broker
 const topic = "/pollen"; // Topic to subscribe to
@@ -41,17 +47,36 @@ function updateDashboard(data) {
 
     // Update GPS Data
     if (data.gps) {
-        const { latitude, longitude, altitude, speed, satellites_in_view, satellites_connected } = data.gps;
-        document.getElementById('latitude').textContent = latitude?.toFixed(6) || '--';
-        document.getElementById('longitude').textContent = longitude?.toFixed(6) || '--';
-        document.getElementById('altitude').textContent = altitude?.toFixed(1) || '--';
-        document.getElementById('speed').textContent = speed?.toFixed(1) || '--';
-        document.getElementById('satellites-view').textContent = satellites_in_view || '--';
-        document.getElementById('satellites-connected').textContent = satellites_connected || '--';
+        const nmeaSentences = data.gps.split('\n'); // Split the NMEA string into sentences
+
+        nmeaSentences.forEach(sentence => {
+            gps.update(sentence); // Process each sentence
+
+            // Check for satellites connected in GPGGA
+            if (sentence.startsWith('$GPGGA')) {
+                const parts = sentence.split(',');
+                satellitesConnected = parseInt(parts[7], 10) || 0; // Extract satellites connected
+            }
+        });
+
+        // Get parsed GPS data
+        const latitude = gps.state.lat || '--';
+        const longitude = gps.state.lon || '--';
+        const altitude = gps.state.alt || '--';
+        const speed = gps.state.speed || '--';
+
+        // Update HTML elements
+        document.getElementById('latitude').textContent = latitude !== '--' ? latitude.toFixed(6) : '--';
+        document.getElementById('longitude').textContent = longitude !== '--' ? longitude.toFixed(6) : '--';
+        document.getElementById('altitude').textContent = altitude !== '--' ? altitude.toFixed(1) : '--';
+        document.getElementById('speed').textContent = speed !== '--' ? (speed * 1.852).toFixed(1) : '--'; // Convert knots to km/h
+        document.getElementById('satellites-connected').textContent = satellitesConnected;
 
         // Update the map
-        marker.setLatLng([latitude, longitude]);
-        map.setView([latitude, longitude], 13);
+        if (latitude !== '--' && longitude !== '--') {
+            marker.setLatLng([latitude, longitude]);
+            map.setView([latitude, longitude], 13);
+        }
     }
 
     // Update Power Data
