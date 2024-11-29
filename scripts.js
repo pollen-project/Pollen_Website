@@ -60,10 +60,17 @@ function updateDashboard(data) {
 
     // Update Power Data
     if (data.power) {
-        document.getElementById('vsol').textContent = data.power.Vsol?.toFixed(2) || '--';
-        document.getElementById('isol').textContent = data.power.Isol?.toFixed(2) || '--';
-        document.getElementById('vbat').textContent = data.power.Vbat?.toFixed(2) || '--';
-        document.getElementById('ibat').textContent = data.power.Ibat?.toFixed(2) || '--';
+        // Convert milliVolts to Volts
+        const vsol = (data.power.Vsol / 1000).toFixed(2); // Convert to Volts
+        const vbat = (data.power.Vbat / 1000).toFixed(2); // Convert to Volts
+        const isol = (data.power.Isol).toFixed(0);
+        const ibat = (data.power.Ibat).toFixed(0); 
+
+        // Update HTML elements
+        document.getElementById('vsol').textContent = vsol;
+        document.getElementById('vbat').textContent = vbat;
+        document.getElementById('isol').textContent = isol;
+        document.getElementById('ibat').textContent = ibat;
         document.getElementById('isCharging').textContent = data.power.is_charging ? "🟢" : "🔴";
     }
 }
@@ -103,10 +110,10 @@ const powerChart = new Chart(powerCtx, {
     data: {
         labels: [], // Time labels
         datasets: [
-            { label: 'Solar Voltage (Vsol)', data: [], borderColor: 'rgba(255, 165, 0, 1)', borderWidth: 2, fill: false },
-            { label: 'Solar Current (Isol)', data: [], borderColor: 'rgba(255, 69, 0, 1)', borderWidth: 2, fill: false },
-            { label: 'Battery Voltage (Vbat)', data: [], borderColor: 'rgba(75, 0, 130, 1)', borderWidth: 2, fill: false },
-            { label: 'Battery Current (Ibat)', data: [], borderColor: 'rgba(148, 0, 211, 1)', borderWidth: 2, fill: false },
+            { label: 'Solar Voltage (V)', data: [], borderColor: 'rgba(255, 165, 0, 1)', borderWidth: 2, fill: false },
+            { label: 'Solar Current (mA)', data: [], borderColor: 'rgba(255, 69, 0, 1)', borderWidth: 2, fill: false },
+            { label: 'Battery Voltage (V)', data: [], borderColor: 'rgba(75, 0, 130, 1)', borderWidth: 2, fill: false },
+            { label: 'Battery Current (mA)', data: [], borderColor: 'rgba(148, 0, 211, 1)', borderWidth: 2, fill: false },
             { label: 'Is Charging (1 = Yes, 0 = No)', data: [], borderColor: 'rgba(86, 204, 242, 1)', borderWidth: 2, fill: false },
         ],
     },
@@ -152,10 +159,10 @@ function updateChartData(data) {
 
     // Update Power Chart
     if (data.power) {
-        const vsol = data.power?.Vsol || null;
-        const isol = data.power?.Isol || null;
-        const vbat = data.power?.Vbat || null;
-        const ibat = data.power?.Ibat || null;
+        const vsol = data.power?.Vsol / 1000; // Convert to Volts
+        const vbat = data.power?.Vbat / 1000; // Convert to Volts
+        const isol = data.power?.Isol; 
+        const ibat = data.power?.Ibat; 
         const isCharging = data.power?.is_charging ? 1 : 0;
 
         powerChart.data.labels.push(now);
@@ -207,18 +214,18 @@ document.getElementById('exportDataButton').addEventListener('click', exportSens
 // Function to export power data as CSV
 function exportPowerData() {
     const csvRows = [];
-    const headers = ['Time', 'Solar Voltage (Vsol)', 'Solar Current (Isol)', 'Battery Voltage (Vbat)', 'Battery Current (Ibat)', 'Is Charging (1=Yes, 0=No)'];
+    const headers = ['Time', 'Solar Voltage (V)', 'Solar Current (mA)', 'Battery Voltage (V)', 'Battery Current (mA)', 'Is Charging (1=Yes, 0=No)'];
     csvRows.push(headers.join(','));
 
     const dataLength = powerChart.data.labels.length;
     for (let i = 0; i < dataLength; i++) {
         const row = [
             powerChart.data.labels[i],
-            powerChart.data.datasets[0].data[i],
-            powerChart.data.datasets[1].data[i],
-            powerChart.data.datasets[2].data[i],
-            powerChart.data.datasets[3].data[i],
-            powerChart.data.datasets[4].data[i],
+            (powerChart.data.datasets[0].data[i] || 0).toFixed(2), // Solar Voltage in Volts
+            (powerChart.data.datasets[1].data[i] || 0).toFixed(0), // Solar Current in mA
+            (powerChart.data.datasets[2].data[i] || 0).toFixed(2), // Battery Voltage in Volts
+            (powerChart.data.datasets[3].data[i] || 0).toFixed(0), // Battery Current in mA
+            powerChart.data.datasets[4].data[i], // Is Charging (binary)
         ];
         csvRows.push(row.join(','));
     }
