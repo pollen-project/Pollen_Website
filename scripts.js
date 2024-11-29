@@ -60,20 +60,20 @@ function updateDashboard(data) {
         });
 
         // Get parsed GPS data
-        const latitude = gps.state.lat || '--';
-        const longitude = gps.state.lon || '--';
+        const latitude = gps.state.lat || null; // Set to null if undefined
+        const longitude = gps.state.lon || null; // Set to null if undefined
         const altitude = gps.state.alt || '--';
         const speed = gps.state.speed || '--';
 
         // Update HTML elements
-        document.getElementById('latitude').textContent = latitude !== '--' ? latitude.toFixed(6) : '--';
-        document.getElementById('longitude').textContent = longitude !== '--' ? longitude.toFixed(6) : '--';
+        document.getElementById('latitude').textContent = latitude !== null ? latitude.toFixed(6) : '--';
+        document.getElementById('longitude').textContent = longitude !== null ? longitude.toFixed(6) : '--';
         document.getElementById('altitude').textContent = altitude !== '--' ? altitude.toFixed(1) : '--';
         document.getElementById('speed').textContent = speed !== '--' ? (speed * 1.852).toFixed(1) : '--'; // Convert knots to km/h
         document.getElementById('satellites-connected').textContent = satellitesConnected;
 
-        // Update the map
-        if (latitude !== '--' && longitude !== '--') {
+        // Update the map only if latitude and longitude are valid
+        if (latitude !== null && longitude !== null) {
             marker.setLatLng([latitude, longitude]);
             map.setView([latitude, longitude], 13);
         }
