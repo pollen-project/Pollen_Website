@@ -22,7 +22,7 @@
         <div class="grid">
             <!-- Sensor Data Card -->
             <div class="card">
-                <h2>Sensor Data</h2>
+                <h2>Sensor Data 🌤️</h2>
                 <div class="sensor-grid">
                     <p>Box Temperature: <span id="temp1">--</span> °C</p>
                     <p>Box Humidity: <span id="humidity1">--</span> %</p>
@@ -41,17 +41,17 @@
 
             <!-- Power Data Card -->
             <div class="power-card">
-                <h2>Power Data</h2>
+                <h2>Power Data ⚡️</h2>
                 <div class="power-grid">
                     <p>Solar Voltage (Vsol): <span id="vsol">--</span> V</p>
                     <p>Solar Current (Isol): <span id="isol">--</span> mA</p>
                     <p>Battery Voltage (Vbat): <span id="vbat">--</span> V</p>
                     <p>Battery Current (Ibat): <span id="ibat">--</span> mA</p>
+                    <!-- Align "Is Charging" and "PGood" properly under the respective columns -->
+                    <p class="is-charging">Is Charging: <span id="isCharging">🔴</span></p>
+                    <p class="pgood">PGood: <span id="pgood">🔴</span></p>
                 </div>
-                <p class="is-charging">Is Charging: <span id="isCharging">🔴</span></p>
-                <!-- Drop-down Button -->
                 <button class="toggle-button" onclick="toggleChart('powerChartContainer')">Show/Hide Chart</button>
-                <!-- Historical Data Chart -->
                 <div class="chart-container" id="powerChartContainer" style="display: none;">
                     <h3 style="text-align: center;">Historical Data for Power</h3>
                     <canvas id="powerChart"></canvas>
@@ -61,7 +61,7 @@
 
             <!-- GPS Data Card -->
             <div class="gps-card">
-                <h2>GPS Data</h2>
+                <h2>GPS Data 🛰️</h2>
                 <div class="gps-grid">
                     <p>Latitude: <span id="latitude">--</span></p>
                     <p>Longitude: <span id="longitude">--</span></p>

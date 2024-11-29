@@ -70,7 +70,7 @@ h1, h2, p {
 /* Grid Layout for Card Content */
 .sensor-grid, .gps-grid, .power-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr; /* Two equal-width columns */
     gap: 15px;
     justify-content: center;
     margin-bottom: 15px;
@@ -84,14 +84,23 @@ h1, h2, p {
     text-align: center;
 }
 
-.is-charging {
+/* Styles for Is Charging and PGood in Power Data Card */
+.is-charging, .pgood {
     text-align: center;
     font-size: 1.2rem;
     font-weight: bold;
     color: #f9f9f9;
     margin: 0;
-    grid-column: span 2;
-    margin-top: 15px;
+    margin-top: 10px; /* Add space between the sections */
+}
+
+/* Align Is Charging and PGood under respective columns */
+.is-charging {
+    grid-column: 1; /* Align under the left column */
+}
+
+.pgood {
+    grid-column: 2; /* Align under the right column */
 }
 
 /* Chart Section Inside Sensor and Power Cards */

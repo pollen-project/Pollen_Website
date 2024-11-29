@@ -6,14 +6,11 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
 }).addTo(map);
 
-// MQTT client setup
+// MQTT client setup and connection
 const brokerURL = "ws://mqtt.eclipseprojects.io/mqtt"; // WebSocket URL for the MQTT broker
 const topic = "/pollen"; // Topic to subscribe to
-
-// Connect to the MQTT broker
 const client = mqtt.connect(brokerURL);
 
-// Handle connection success
 client.on('connect', () => {
     console.log("Connected to MQTT broker");
     client.subscribe(topic, (err) => {
@@ -25,12 +22,11 @@ client.on('connect', () => {
     });
 });
 
-// Handle incoming messages
 client.on('message', (topic, message) => {
     console.log(`Received message from topic ${topic}:`, message.toString());
-    const data = JSON.parse(message.toString()); // Assuming the data is sent in JSON format
-    updateDashboard(data); // Update the dashboard with the received data
-    updateChartData(data); // Update the charts with the received data
+    const data = JSON.parse(message.toString());
+    updateDashboard(data); // Update the dashboard
+    updateChartData(data); // Update the charts
 });
 
 // Function to update the dashboard
@@ -60,59 +56,61 @@ function updateDashboard(data) {
 
     // Update Power Data
     if (data.power) {
-        // Convert milliVolts to Volts
-        const vsol = (data.power.Vsol / 1000).toFixed(2); // Convert to Volts
-        const vbat = (data.power.Vbat / 1000).toFixed(2); // Convert to Volts
-        const isol = (data.power.Isol).toFixed(0);
-        const ibat = (data.power.Ibat).toFixed(0); 
+        const vsol = (data.power.Vsol / 1000).toFixed(2); // Convert to volts
+        const vbat = (data.power.Vbat / 1000).toFixed(2); // Convert to volts
+        const isol = data.power.Isol.toFixed(0);
+        const ibat = data.power.Ibat.toFixed(0);
+        const isCharging = data.power.is_charging ? "🟢" : "🔴";
+        const pgood = data.power.pgood ? "🟢" : "🔴";
 
         // Update HTML elements
         document.getElementById('vsol').textContent = vsol;
         document.getElementById('vbat').textContent = vbat;
         document.getElementById('isol').textContent = isol;
         document.getElementById('ibat').textContent = ibat;
-        document.getElementById('isCharging').textContent = data.power.is_charging ? "🟢" : "🔴";
+        document.getElementById('isCharging').textContent = isCharging;
+        document.getElementById('pgood').textContent = pgood;
     }
 }
 
-// Initialize Sensor Chart.js
+// Initialize Sensor Chart
 const ctx = document.getElementById('sensorChart').getContext('2d');
 const sensorChart = new Chart(ctx, {
     type: 'line',
     data: {
-        labels: [], // Time labels
+        labels: [],
         datasets: [
             {
                 label: 'Box Temperature (°C)',
                 data: [],
-                borderColor: 'rgba(86, 204, 242, 1)', // Blue
+                borderColor: 'rgba(86, 204, 242, 1)',
                 borderWidth: 2,
                 fill: false,
-                yAxisID: 'y-temp', // Bind this dataset to the temperature axis
+                yAxisID: 'y-temp',
             },
             {
                 label: 'Box Humidity (%)',
                 data: [],
-                borderColor: 'rgba(242, 204, 86, 1)', // Yellow
+                borderColor: 'rgba(242, 204, 86, 1)',
                 borderWidth: 2,
                 fill: false,
-                yAxisID: 'y-humidity', // Bind this dataset to the humidity axis
+                yAxisID: 'y-humidity',
             },
             {
                 label: 'Outside Temperature (°C)',
                 data: [],
-                borderColor: 'rgba(86, 255, 86, 1)', // Green
+                borderColor: 'rgba(86, 255, 86, 1)',
                 borderWidth: 2,
                 fill: false,
-                yAxisID: 'y-temp', // Bind this dataset to the temperature axis
+                yAxisID: 'y-temp',
             },
             {
                 label: 'Outside Humidity (%)',
                 data: [],
-                borderColor: 'rgba(204, 86, 242, 1)', // Purple
+                borderColor: 'rgba(204, 86, 242, 1)',
                 borderWidth: 2,
                 fill: false,
-                yAxisID: 'y-humidity', // Bind this dataset to the humidity axis
+                yAxisID: 'y-humidity',
             },
         ],
     },
@@ -129,26 +127,17 @@ const sensorChart = new Chart(ctx, {
                 title: { display: true, text: 'Time', color: '#ffffff' },
                 ticks: { color: '#ffffff' },
             },
-            y: { // Default Y-axis (disable it)
-                display: false, // Completely hide the default Y-axis
-            },
-            'y-temp': { // Temperature Y-axis
+            'y-temp': {
                 type: 'linear',
                 position: 'left',
                 title: { display: true, text: 'Temperature (°C)', color: '#ffffff' },
                 ticks: { color: '#ffffff' },
-                grid: {
-                    drawOnChartArea: true, // Enable gridlines for temperature
-                },
             },
-            'y-humidity': { // Humidity Y-axis
+            'y-humidity': {
                 type: 'linear',
                 position: 'right',
                 title: { display: true, text: 'Humidity (%)', color: '#ffffff' },
                 ticks: { color: '#ffffff' },
-                grid: {
-                    drawOnChartArea: false, // Disable gridlines for humidity
-                },
             },
         },
     },
@@ -159,49 +148,55 @@ const powerCtx = document.getElementById('powerChart').getContext('2d');
 const powerChart = new Chart(powerCtx, {
     type: 'line',
     data: {
-        labels: [], // Time labels
+        labels: [],
         datasets: [
             {
                 label: 'Solar Voltage (V)',
                 data: [],
-                borderColor: 'rgba(255, 165, 0, 1)', // Orange
+                borderColor: 'rgba(255, 165, 0, 1)',
                 borderWidth: 2,
                 fill: false,
-                yAxisID: 'y-voltage', // Bind this dataset to the voltage axis
+                yAxisID: 'y-voltage',
             },
             {
                 label: 'Solar Current (mA)',
                 data: [],
-                borderColor: 'rgba(75, 0, 130, 1)', // Indigo
+                borderColor: 'rgba(75, 0, 130, 1)',
                 borderWidth: 2,
                 fill: false,
-                yAxisID: 'y-current', // Bind this dataset to the voltage axis
+                yAxisID: 'y-current',
             },
             {
                 label: 'Battery Voltage (V)',
                 data: [],
-                borderColor: 'rgba(255, 69, 0, 1)', // Red
+                borderColor: 'rgba(255, 69, 0, 1)',
                 borderWidth: 2,
                 fill: false,
-                yAxisID: 'y-voltage', // Bind this dataset to the current axis
+                yAxisID: 'y-voltage',
             },
             {
                 label: 'Battery Current (mA)',
                 data: [],
-                borderColor: 'rgba(148, 0, 211, 1)', // Violet
+                borderColor: 'rgba(148, 0, 211, 1)',
                 borderWidth: 2,
                 fill: false,
-                yAxisID: 'y-current', // Bind this dataset to the current axis
+                yAxisID: 'y-current',
             },
             {
-                label: 'Is Charging (1 = Yes, 0 = No)',
+                label: 'Is Charging (1 = Yes 0 = No)',
                 data: [],
-                borderColor: 'rgba(86, 204, 242, 1)', // Blue
+                borderColor: 'rgba(86, 204, 242, 1)',
                 borderWidth: 2,
                 fill: false,
-                pointStyle: 'circle',
-                pointRadius: 3,
-                yAxisID: 'y-current', // Bind this dataset to the current axis
+                yAxisID: 'y-current',
+            },
+            {
+                label: 'PGood (1 = Yes 0 = No)',
+                data: [],
+                borderColor: 'rgba(50, 205, 50, 1)',
+                borderWidth: 2,
+                fill: false,
+                yAxisID: 'y-current',
             },
         ],
     },
@@ -218,32 +213,23 @@ const powerChart = new Chart(powerCtx, {
                 title: { display: true, text: 'Time', color: '#ffffff' },
                 ticks: { color: '#ffffff' },
             },
-            y: { // Default Y-axis (disable it)
-                display: false, // Completely hide the default Y-axis
-            },
-            'y-voltage': { // Voltage Y-axis
+            'y-voltage': {
                 type: 'linear',
                 position: 'left',
                 title: { display: true, text: 'Voltage (V)', color: '#ffffff' },
                 ticks: { color: '#ffffff' },
-                grid: {
-                    drawOnChartArea: true, // Enable gridlines for voltage
-                },
             },
-            'y-current': { // Current and Is Charging Y-axis
+            'y-current': {
                 type: 'linear',
                 position: 'right',
-                title: { display: true, text: 'Current (mA) & Is Charging (0/1)', color: '#ffffff' },
+                title: { display: true, text: 'Current (mA) & Indicators', color: '#ffffff' },
                 ticks: { color: '#ffffff' },
-                grid: {
-                    drawOnChartArea: false, // Disable gridlines for current
-                },
             },
         },
     },
 });
 
-// Update Chart with Fetched Data
+// Function to update both charts with data
 function updateChartData(data) {
     const now = new Date().toLocaleTimeString();
 
@@ -270,11 +256,12 @@ function updateChartData(data) {
 
     // Update Power Chart
     if (data.power) {
-        const vsol = data.power?.Vsol / 1000; // Convert to Volts
-        const vbat = data.power?.Vbat / 1000; // Convert to Volts
-        const isol = data.power?.Isol; 
-        const ibat = data.power?.Ibat; 
-        const isCharging = data.power?.is_charging ? 1 : 0;
+        const vsol = data.power.Vsol / 1000;
+        const vbat = data.power.Vbat / 1000;
+        const isol = data.power.Isol;
+        const ibat = data.power.Ibat;
+        const isCharging = data.power.is_charging ? 1 : 0;
+        const pgood = data.power.pgood ? 1 : 0;
 
         powerChart.data.labels.push(now);
         powerChart.data.datasets[0].data.push(vsol);
@@ -282,6 +269,7 @@ function updateChartData(data) {
         powerChart.data.datasets[2].data.push(vbat);
         powerChart.data.datasets[3].data.push(ibat);
         powerChart.data.datasets[4].data.push(isCharging);
+        powerChart.data.datasets[5].data.push(pgood);
 
         if (powerChart.data.labels.length > 100) {
             powerChart.data.labels.shift();
@@ -292,18 +280,27 @@ function updateChartData(data) {
     }
 }
 
-// Function to export sensor data as CSV
+// Function to toggle chart visibility
+function toggleChart(chartContainerId) {
+    const chartContainer = document.getElementById(chartContainerId);
+    chartContainer.style.display = chartContainer.style.display === 'none' ? 'block' : 'none';
+}
+
+// Function to export sensor data to CSV
 function exportSensorData() {
     const csvRows = [];
-    const headers = ['Time', ...sensorChart.data.datasets.map(dataset => dataset.label)];
+    const headers = ['Time', 'Box Temperature (°C)', 'Box Humidity (%)', 'Outside Temperature (°C)', 'Outside Humidity (%)'];
     csvRows.push(headers.join(','));
 
     const dataLength = sensorChart.data.labels.length;
     for (let i = 0; i < dataLength; i++) {
-        const row = [sensorChart.data.labels[i]];
-        sensorChart.data.datasets.forEach(dataset => {
-            row.push(dataset.data[i]);
-        });
+        const row = [
+            sensorChart.data.labels[i],
+            sensorChart.data.datasets[0].data[i] || '',
+            sensorChart.data.datasets[1].data[i] || '',
+            sensorChart.data.datasets[2].data[i] || '',
+            sensorChart.data.datasets[3].data[i] || '',
+        ];
         csvRows.push(row.join(','));
     }
 
@@ -319,24 +316,30 @@ function exportSensorData() {
     URL.revokeObjectURL(url);
 }
 
-// Attach the export function to the Sensor Data button
-document.getElementById('exportDataButton').addEventListener('click', exportSensorData);
-
-// Function to export power data as CSV
+// Function to export power data to CSV
 function exportPowerData() {
     const csvRows = [];
-    const headers = ['Time', 'Solar Voltage (V)', 'Solar Current (mA)', 'Battery Voltage (V)', 'Battery Current (mA)', 'Is Charging (1=Yes 0=No)'];
+    const headers = [
+        'Time',
+        'Solar Voltage (V)',
+        'Solar Current (mA)',
+        'Battery Voltage (V)',
+        'Battery Current (mA)',
+        'Is Charging (1=Yes 0=No)',
+        'PGood (1=Yes 0=No)'
+    ];
     csvRows.push(headers.join(','));
 
     const dataLength = powerChart.data.labels.length;
     for (let i = 0; i < dataLength; i++) {
         const row = [
-            powerChart.data.labels[i],
-            (powerChart.data.datasets[0].data[i] || 0).toFixed(2), // Solar Voltage in Volts
-            (powerChart.data.datasets[1].data[i] || 0).toFixed(0), // Solar Current in mA
-            (powerChart.data.datasets[2].data[i] || 0).toFixed(2), // Battery Voltage in Volts
-            (powerChart.data.datasets[3].data[i] || 0).toFixed(0), // Battery Current in mA
-            powerChart.data.datasets[4].data[i], // Is Charging (binary)
+            powerChart.data.labels[i], // Time
+            powerChart.data.datasets[0].data[i]?.toFixed(2) || '', // Solar Voltage
+            powerChart.data.datasets[1].data[i]?.toFixed(0) || '', // Solar Current
+            powerChart.data.datasets[2].data[i]?.toFixed(2) || '', // Battery Voltage
+            powerChart.data.datasets[3].data[i]?.toFixed(0) || '', // Battery Current
+            powerChart.data.datasets[4].data[i] === 1 ? 1 : 0, // Is Charging (1/0)
+            powerChart.data.datasets[5].data[i] === 1 ? 1 : 0  // PGood (1/0)
         ];
         csvRows.push(row.join(','));
     }
@@ -353,14 +356,6 @@ function exportPowerData() {
     URL.revokeObjectURL(url);
 }
 
-function toggleChart(chartContainerId) {
-    const chartContainer = document.getElementById(chartContainerId);
-    if (chartContainer.style.display === 'none') {
-        chartContainer.style.display = 'block';
-    } else {
-        chartContainer.style.display = 'none';
-    }
-}
-
-// Attach the export function to the Power Data button
+// Attach the export functions to the buttons
+document.getElementById('exportDataButton').addEventListener('click', exportSensorData);
 document.getElementById('exportPowerDataButton').addEventListener('click', exportPowerData);
