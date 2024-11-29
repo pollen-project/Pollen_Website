@@ -170,20 +170,20 @@ const powerChart = new Chart(powerCtx, {
                 yAxisID: 'y-voltage', // Bind this dataset to the voltage axis
             },
             {
-                label: 'Battery Voltage (V)',
+                label: 'Solar Current (mA)',
                 data: [],
                 borderColor: 'rgba(75, 0, 130, 1)', // Indigo
                 borderWidth: 2,
                 fill: false,
-                yAxisID: 'y-voltage', // Bind this dataset to the voltage axis
+                yAxisID: 'y-current', // Bind this dataset to the voltage axis
             },
             {
-                label: 'Solar Current (mA)',
+                label: 'Battery Voltage (V)',
                 data: [],
                 borderColor: 'rgba(255, 69, 0, 1)', // Red
                 borderWidth: 2,
                 fill: false,
-                yAxisID: 'y-current', // Bind this dataset to the current axis
+                yAxisID: 'y-voltage', // Bind this dataset to the current axis
             },
             {
                 label: 'Battery Current (mA)',
@@ -325,7 +325,7 @@ document.getElementById('exportDataButton').addEventListener('click', exportSens
 // Function to export power data as CSV
 function exportPowerData() {
     const csvRows = [];
-    const headers = ['Time', 'Solar Voltage (V)', 'Solar Current (mA)', 'Battery Voltage (V)', 'Battery Current (mA)', 'Is Charging (1=Yes, 0=No)'];
+    const headers = ['Time', 'Solar Voltage (V)', 'Solar Current (mA)', 'Battery Voltage (V)', 'Battery Current (mA)', 'Is Charging (1=Yes 0=No)'];
     csvRows.push(headers.join(','));
 
     const dataLength = powerChart.data.labels.length;
@@ -351,6 +351,15 @@ function exportPowerData() {
     link.click();
 
     URL.revokeObjectURL(url);
+}
+
+function toggleChart(chartContainerId) {
+    const chartContainer = document.getElementById(chartContainerId);
+    if (chartContainer.style.display === 'none') {
+        chartContainer.style.display = 'block';
+    } else {
+        chartContainer.style.display = 'none';
+    }
 }
 
 // Attach the export function to the Power Data button

@@ -20,7 +20,7 @@
     <div class="container">
         <!-- Cards -->
         <div class="grid">
-            <!-- Sensor Data -->
+            <!-- Sensor Data Card -->
             <div class="card">
                 <h2>Sensor Data</h2>
                 <div class="sensor-grid">
@@ -29,8 +29,10 @@
                     <p>Outside Temperature: <span id="temp2">--</span> °C</p>
                     <p>Outside Humidity: <span id="humidity2">--</span> %</p>
                 </div>
+                <!-- Drop-down Button -->
+                <button class="toggle-button" onclick="toggleChart('sensorChartContainer')">Show/Hide Chart</button>
                 <!-- Historical Data Charts -->
-                <div class="chart-container">
+                <div class="chart-container" id="sensorChartContainer" style="display: none;">
                     <h3 style="text-align: center;">Historical Data for Temperature & Humidity</h3>
                     <canvas id="sensorChart"></canvas>
                     <button id="exportDataButton" class="export-button">Export Data to CSV</button>
@@ -47,8 +49,10 @@
                     <p>Battery Current (Ibat): <span id="ibat">--</span> mA</p>
                 </div>
                 <p class="is-charging">Is Charging: <span id="isCharging">🔴</span></p>
+                <!-- Drop-down Button -->
+                <button class="toggle-button" onclick="toggleChart('powerChartContainer')">Show/Hide Chart</button>
                 <!-- Historical Data Chart -->
-                <div class="chart-container">
+                <div class="chart-container" id="powerChartContainer" style="display: none;">
                     <h3 style="text-align: center;">Historical Data for Power</h3>
                     <canvas id="powerChart"></canvas>
                     <button id="exportPowerDataButton" class="export-button">Export Power Data to CSV</button>
