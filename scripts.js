@@ -13,7 +13,7 @@ const gps = new GPS();
 let satellitesConnected = 0;
 
 // MQTT client setup and connection
-const brokerURL = "ws://mqtt.eclipseprojects.io/mqtt"; // WebSocket URL for the MQTT broker
+const brokerURL = "wss://mqtt.eclipseprojects.io/mqtt"; // WebSocket URL for the MQTT broker
 const topic = "/pollen"; // Topic to subscribe to
 const client = mqtt.connect(brokerURL);
 
