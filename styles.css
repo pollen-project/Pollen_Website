@@ -90,8 +90,6 @@ h1, h2, p {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    box-sizing: border-box;
-    overflow: hidden; /* Prevent content overflow */
 }
 
 .card h2, .power-card h2, .gps-card h2 {
@@ -159,7 +157,7 @@ h1, h2, p {
     align-items: center;
     width: 100%;
     box-sizing: border-box;
-    min-height: 350px; /* Ensure space for charts */
+    overflow: hidden;
 }
 
 .card .chart-container h3, .power-card .chart-container h3 {
@@ -171,6 +169,7 @@ h1, h2, p {
 
 .card #sensorChart, .power-card #powerChart {
     width: 100%;
+    height: auto;
     max-width: none;
     aspect-ratio: 16 / 9;
 }
@@ -182,14 +181,26 @@ h1, h2, p {
     }
 
     .card #sensorChart, .power-card #powerChart {
-        height: auto;
-        aspect-ratio: 4 / 3; /* Adjust ratio for smaller screens */
+        height: 300px; /* Adjust chart height for smaller screens */
     }
 }
 
 @media (max-width: 480px) {
     .card #sensorChart, .power-card #powerChart {
-        aspect-ratio: 1 / 1;
+        height: 250px; /* Further reduce chart height */
+    }
+}
+
+/* Ensure Zoom-Out for Small Devices */
+@media (max-width: 768px) {
+    html {
+        zoom: 0.8; /* Scale down for medium screens */
+    }
+}
+
+@media (max-width: 480px) {
+    html {
+        zoom: 0.6; /* Scale further down for small screens */
     }
 }
 
