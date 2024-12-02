@@ -59,20 +59,17 @@ function updateDashboard(data) {
             }
         });
 
-        // Get parsed GPS data
-        const latitude = gps.state.lat || null; // Set to null if undefined
-        const longitude = gps.state.lon || null; // Set to null if undefined
+        const latitude = gps.state.lat || null;
+        const longitude = gps.state.lon || null;
         const altitude = gps.state.alt || '--';
         const speed = gps.state.speed || '--';
 
-        // Update HTML elements
         document.getElementById('latitude').textContent = latitude !== null ? latitude.toFixed(6) : '--';
         document.getElementById('longitude').textContent = longitude !== null ? longitude.toFixed(6) : '--';
         document.getElementById('altitude').textContent = altitude !== '--' ? altitude.toFixed(1) : '--';
-        document.getElementById('speed').textContent = speed !== '--' ? (speed * 1.852).toFixed(1) : '--'; // Convert knots to km/h
+        document.getElementById('speed').textContent = speed !== '--' ? (speed * 1.852).toFixed(1) : '--';
         document.getElementById('satellites-connected').textContent = satellitesConnected;
 
-        // Update the map only if latitude and longitude are valid
         if (latitude !== null && longitude !== null) {
             marker.setLatLng([latitude, longitude]);
             map.setView([latitude, longitude], 13);
@@ -84,17 +81,40 @@ function updateDashboard(data) {
         const vsol = (data.power.Vsol / 1000).toFixed(2); // Convert to volts
         const vbat = (data.power.Vbat / 1000).toFixed(2); // Convert to volts
         const isol = data.power.Isol.toFixed(0);
-        const ibat = data.power.Ibat.toFixed(0);
+        const ibat = Math.abs(data.power.Ibat); // Ensure current is positive
         const isCharging = data.power.is_charging ? "🟢" : "🔴";
         const pgood = data.power.pgood ? "🟢" : "🔴";
+
+        // Battery percentage calculation
+        const Vmax = 4.2; // Maximum battery voltage
+        const Vmin = 3.0; // Minimum battery voltage
+        const maxCapacity = 2000; // Replace with your battery's capacity in mAh
+        let batteryPercentage = ((vbat - Vmin) / (Vmax - Vmin)) * 100;
+        batteryPercentage = Math.max(0, Math.min(100, batteryPercentage)); // Clamp between 0 and 100
+
+        // Remaining battery capacity (mAh)
+        const remainingCapacity = (maxCapacity * batteryPercentage) / 100;
+
+        // Estimate remaining time (hours)
+        let timeLeftHours = remainingCapacity / ibat;
+        if (!isFinite(timeLeftHours) || ibat === 0) timeLeftHours = "--"; // Handle division by zero
+
+        // Convert to days
+        const timeLeftDays = timeLeftHours !== "--" ? (timeLeftHours / 24).toFixed(1) : "--";
 
         // Update HTML elements
         document.getElementById('vsol').textContent = vsol;
         document.getElementById('vbat').textContent = vbat;
         document.getElementById('isol').textContent = isol;
-        document.getElementById('ibat').textContent = ibat;
+        document.getElementById('ibat').textContent = ibat.toFixed(0);
         document.getElementById('isCharging').textContent = isCharging;
         document.getElementById('pgood').textContent = pgood;
+        document.getElementById('battery-percentage').textContent = batteryPercentage.toFixed(0);
+
+        // Display time left
+        document.getElementById('time-left').textContent = timeLeftHours !== "--" 
+            ? `${timeLeftHours.toFixed(1)} hours (${timeLeftDays} days)` 
+            : "--";
     }
 }
 
@@ -173,7 +193,7 @@ const powerCtx = document.getElementById('powerChart').getContext('2d');
 const powerChart = new Chart(powerCtx, {
     type: 'line',
     data: {
-        labels: [],
+        labels: [], 
         datasets: [
             {
                 label: 'Solar Voltage (V)',
@@ -208,7 +228,15 @@ const powerChart = new Chart(powerCtx, {
                 yAxisID: 'y-current',
             },
             {
-                label: 'Is Charging (1 = Yes 0 = No)',
+                label: 'Battery Percentage (%)',
+                data: [], // Dataset for battery percentage
+                borderColor: 'rgba(50, 205, 50, 1)',
+                borderWidth: 2,
+                fill: false,
+                yAxisID: 'y-percentage', // Link to the fixed y-axis
+            },
+            {
+                label: 'Is Charging (1 = Yes, 0 = No)',
                 data: [],
                 borderColor: 'rgba(86, 204, 242, 1)',
                 borderWidth: 2,
@@ -216,9 +244,9 @@ const powerChart = new Chart(powerCtx, {
                 yAxisID: 'y-current',
             },
             {
-                label: 'PGood (1 = Yes 0 = No)',
+                label: 'PGood (1 = Yes, 0 = No)',
                 data: [],
-                borderColor: 'rgba(50, 205, 50, 1)',
+                borderColor: 'rgba(255, 215, 0, 1)',
                 borderWidth: 2,
                 fill: false,
                 yAxisID: 'y-current',
@@ -230,7 +258,10 @@ const powerChart = new Chart(powerCtx, {
         plugins: {
             legend: {
                 position: 'top',
-                labels: { font: { size: 14 }, color: 'rgba(255, 255, 255, 0.8)' },
+                labels: {
+                    font: { size: 14 },
+                    color: 'rgba(255, 255, 255, 0.8)',
+                },
             },
         },
         scales: {
@@ -249,6 +280,21 @@ const powerChart = new Chart(powerCtx, {
                 position: 'right',
                 title: { display: true, text: 'Current (mA) & Indicators', color: '#ffffff' },
                 ticks: { color: '#ffffff' },
+            },
+            'y-percentage': {
+                type: 'linear',
+                position: 'right',
+                offset: true, // Adds spacing to avoid overlap
+                title: { display: true, text: 'Battery Percentage (%)', color: '#ffffff' },
+                ticks: {
+                    color: '#ffffff',
+                    callback: (value) => `${value}%`, // Show percentage on the axis
+                    min: 0, // Fixed minimum value
+                    max: 100, // Fixed maximum value
+                    stepSize: 10, // Adds regular steps for better readability
+                },
+                suggestedMin: 0,
+                suggestedMax: 100,
             },
         },
     },
@@ -285,23 +331,30 @@ function updateChartData(data) {
         const vbat = data.power.Vbat / 1000;
         const isol = data.power.Isol;
         const ibat = data.power.Ibat;
-        const isCharging = data.power.is_charging ? 1 : 0;
-        const pgood = data.power.pgood ? 1 : 0;
 
+        // Battery percentage calculation
+        const Vmax = 4.2;
+        const Vmin = 3.0;
+        let batteryPercentage = ((vbat - Vmin) / (Vmax - Vmin)) * 100;
+        batteryPercentage = Math.max(0, Math.min(100, batteryPercentage)); // Clamp between 0 and 100
+
+        // Add data points to the chart
         powerChart.data.labels.push(now);
         powerChart.data.datasets[0].data.push(vsol);
         powerChart.data.datasets[1].data.push(isol);
         powerChart.data.datasets[2].data.push(vbat);
         powerChart.data.datasets[3].data.push(ibat);
-        powerChart.data.datasets[4].data.push(isCharging);
-        powerChart.data.datasets[5].data.push(pgood);
+        powerChart.data.datasets[4].data.push(batteryPercentage);
+        powerChart.data.datasets[5].data.push(data.power.is_charging ? 1 : 0);
+        powerChart.data.datasets[6].data.push(data.power.pgood ? 1 : 0);
 
+        // Remove old data points if the dataset grows too large
         if (powerChart.data.labels.length > 100) {
             powerChart.data.labels.shift();
-            powerChart.data.datasets.forEach(dataset => dataset.data.shift());
+            powerChart.data.datasets.forEach((dataset) => dataset.data.shift());
         }
 
-        powerChart.update();
+        powerChart.update(); // Update the chart with new data
     }
 }
 
@@ -344,40 +397,67 @@ function exportSensorData() {
 // Function to export power data to CSV
 function exportPowerData() {
     const csvRows = [];
+
+    // Updated headers to include battery percentage and time left
     const headers = [
         'Time',
         'Solar Voltage (V)',
         'Solar Current (mA)',
         'Battery Voltage (V)',
         'Battery Current (mA)',
+        'Battery Percentage (%)',
+        'Time Left (hours)',
         'Is Charging (1=Yes 0=No)',
-        'PGood (1=Yes 0=No)'
+        'PGood (1=Yes 0=No)',
     ];
-    csvRows.push(headers.join(','));
+    csvRows.push(headers.join(',')); // Add headers to the CSV
 
     const dataLength = powerChart.data.labels.length;
+
+    // Loop through the data and construct rows
     for (let i = 0; i < dataLength; i++) {
-        const row = [
-            powerChart.data.labels[i], // Time
-            powerChart.data.datasets[0].data[i]?.toFixed(2) || '', // Solar Voltage
-            powerChart.data.datasets[1].data[i]?.toFixed(0) || '', // Solar Current
-            powerChart.data.datasets[2].data[i]?.toFixed(2) || '', // Battery Voltage
-            powerChart.data.datasets[3].data[i]?.toFixed(0) || '', // Battery Current
-            powerChart.data.datasets[4].data[i] === 1 ? 1 : 0, // Is Charging (1/0)
-            powerChart.data.datasets[5].data[i] === 1 ? 1 : 0  // PGood (1/0)
-        ];
-        csvRows.push(row.join(','));
+        const time = powerChart.data.labels[i];
+        const solarVoltage = powerChart.data.datasets[0].data[i]?.toFixed(2) || '';
+        const solarCurrent = powerChart.data.datasets[1].data[i]?.toFixed(0) || '';
+        const batteryVoltage = powerChart.data.datasets[2].data[i]?.toFixed(2) || '';
+        const batteryCurrent = powerChart.data.datasets[3].data[i]?.toFixed(0) || '';
+        const batteryPercentage = powerChart.data.datasets[4].data[i]?.toFixed(0) || ''; // Add battery percentage
+
+        // Calculate time left using battery percentage and current
+        const batteryCapacity = 2000; // mAh, replace with battery capacity
+        const remainingCapacity = (batteryCapacity * batteryPercentage) / 100; // Remaining capacity in mAh
+        const batteryCurrentAbs = Math.abs(powerChart.data.datasets[3].data[i] || 0); // Ensure non-negative current
+        const timeLeftHours = batteryCurrentAbs > 0 ? (remainingCapacity / batteryCurrentAbs).toFixed(1) : '--';
+
+        const isCharging = powerChart.data.datasets[5].data[i] === 1 ? 1 : 0;
+        const pGood = powerChart.data.datasets[6].data[i] === 1 ? 1 : 0;
+
+        // Add row to CSV
+        csvRows.push([
+            time,
+            solarVoltage,
+            solarCurrent,
+            batteryVoltage,
+            batteryCurrent,
+            batteryPercentage,
+            timeLeftHours,
+            isCharging,
+            pGood,
+        ].join(','));
     }
 
+    // Convert rows to CSV content
     const csvContent = csvRows.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
 
+    // Create a temporary link element to download the file
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'power_data.csv';
+    link.download = 'power_data.csv'; // File name
     link.click();
 
+    // Clean up URL object
     URL.revokeObjectURL(url);
 }
 
