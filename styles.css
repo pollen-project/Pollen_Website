@@ -157,7 +157,8 @@ h1, h2, p {
     align-items: center;
     width: 100%;
     box-sizing: border-box;
-    overflow: hidden; /* Prevent content overflow */
+    overflow: visible; /* Allow content to expand */
+    height: auto; /* Automatically adjust based on child elements */
 }
 
 .card .chart-container h3, .power-card .chart-container h3 {
@@ -168,10 +169,11 @@ h1, h2, p {
 }
 
 .card #sensorChart, .power-card #powerChart {
+    display: block;
     width: 100%;
-    max-height: 800px; /* Limit the height for proper display */
-    max-width: 100%;
-    aspect-ratio: 16 / 9; /* Maintain aspect ratio */
+    height: 100%; /* Allow the canvas to expand with the container */
+    max-height: none; /* Remove restrictive max height */
+    aspect-ratio: 16 / 9;
 }
 
 /* Responsive Chart Adjustments */

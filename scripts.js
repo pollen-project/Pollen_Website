@@ -477,22 +477,25 @@ function exportPowerData() {
     URL.revokeObjectURL(url);
 }
 
-// Function to handle chart resizing
-function adjustCharts() {
-    const width = window.innerWidth;
-    const chartContainers = document.querySelectorAll('.chart-container');
+// Ensure charts resize dynamically based on their container size
+function resizeCharts() {
+    const sensorCanvas = document.getElementById('sensorChart');
+    const powerCanvas = document.getElementById('powerChart');
 
-    chartContainers.forEach(container => {
-        const chartCanvas = container.querySelector('canvas');
-        if (chartCanvas) {
-            if (width < 768) {
-                chartCanvas.style.height = '250px';
-            } else {
-                chartCanvas.style.height = '300px';
-            }
-        }
-    });
+    if (sensorCanvas && powerCanvas) {
+        // Resize sensor chart canvas dynamically
+        sensorCanvas.width = sensorCanvas.parentNode.offsetWidth;
+        sensorCanvas.height = sensorCanvas.width * (9 / 16); // Maintain 16:9 aspect ratio
+
+        // Resize power chart canvas dynamically
+        powerCanvas.width = powerCanvas.parentNode.offsetWidth;
+        powerCanvas.height = powerCanvas.width * (9 / 16);
+    }
 }
+
+// Attach the resize function to the resize event
+window.addEventListener('resize', resizeCharts);
+window.addEventListener('load', resizeCharts);
 
 // Call adjustCharts on page load and resize
 window.addEventListener('load', adjustCharts);
