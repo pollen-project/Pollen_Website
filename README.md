@@ -160,7 +160,10 @@ This project is licensed under the MIT License.
 
 Have questions or suggestions? Feel free to reach out:
 
-- **Email**: your-email@example.com
+- **Email**: student-botond@ruc.dk
+- **LinkedIn**: [Botond Horváth](https://www.linkedin.com/in/botond-horvath/)
+
+- **Email**: mvjp@ruc.dk
 - **LinkedIn**: [Maurits Puggaard](https://www.linkedin.com/in/maurits-puggaard/)
 
 ---
