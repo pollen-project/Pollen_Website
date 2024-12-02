@@ -477,18 +477,26 @@ function exportPowerData() {
     URL.revokeObjectURL(url);
 }
 
-window.addEventListener('resize', () => {
+// Function to handle chart resizing
+function adjustCharts() {
     const width = window.innerWidth;
     const chartContainers = document.querySelectorAll('.chart-container');
 
     chartContainers.forEach(container => {
-        if (width < 768) {
-            container.style.height = '300px';
-        } else {
-            container.style.height = 'auto';
+        const chartCanvas = container.querySelector('canvas');
+        if (chartCanvas) {
+            if (width < 768) {
+                chartCanvas.style.height = '250px';
+            } else {
+                chartCanvas.style.height = '300px';
+            }
         }
     });
-});
+}
+
+// Call adjustCharts on page load and resize
+window.addEventListener('load', adjustCharts);
+window.addEventListener('resize', adjustCharts);
 
 // Attach the export functions to the buttons
 document.getElementById('exportDataButton').addEventListener('click', exportSensorData);

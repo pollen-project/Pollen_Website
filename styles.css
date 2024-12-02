@@ -157,7 +157,7 @@ h1, h2, p {
     align-items: center;
     width: 100%;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: hidden; /* Prevent content overflow */
 }
 
 .card .chart-container h3, .power-card .chart-container h3 {
@@ -169,25 +169,21 @@ h1, h2, p {
 
 .card #sensorChart, .power-card #powerChart {
     width: 100%;
-    height: auto;
-    max-width: none;
-    aspect-ratio: 16 / 9;
+    max-height: 800px; /* Limit the height for proper display */
+    max-width: 100%;
+    aspect-ratio: 16 / 9; /* Maintain aspect ratio */
 }
 
 /* Responsive Chart Adjustments */
 @media (max-width: 768px) {
-    .card .chart-container, .power-card .chart-container {
-        margin-bottom: 20px;
-    }
-
     .card #sensorChart, .power-card #powerChart {
-        height: 300px; /* Adjust chart height for smaller screens */
+        max-height: 250px; /* Smaller height for narrow screens */
     }
 }
 
 @media (max-width: 480px) {
     .card #sensorChart, .power-card #powerChart {
-        height: 250px; /* Further reduce chart height */
+        max-height: 200px; /* Further reduce height for very small screens */
     }
 }
 
