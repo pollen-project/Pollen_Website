@@ -90,6 +90,7 @@ h1, h2, p {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    box-sizing: border-box;
 }
 
 .card h2, .power-card h2, .gps-card h2 {
@@ -158,6 +159,7 @@ h1, h2, p {
     width: 100%;
     box-sizing: border-box;
     overflow: hidden;
+    height: auto; /* Ensure the card grows with content */
 }
 
 .card .chart-container h3, .power-card .chart-container h3 {
