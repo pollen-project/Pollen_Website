@@ -477,6 +477,19 @@ function exportPowerData() {
     URL.revokeObjectURL(url);
 }
 
+window.addEventListener('resize', () => {
+    const width = window.innerWidth;
+    const chartContainers = document.querySelectorAll('.chart-container');
+
+    chartContainers.forEach(container => {
+        if (width < 768) {
+            container.style.height = '300px';
+        } else {
+            container.style.height = 'auto';
+        }
+    });
+});
+
 // Attach the export functions to the buttons
 document.getElementById('exportDataButton').addEventListener('click', exportSensorData);
 document.getElementById('exportPowerDataButton').addEventListener('click', exportPowerData);
