@@ -162,6 +162,14 @@ const sensorChart = new Chart(ctx, {
     options: {
         responsive: true,
         plugins: {
+            tooltip: {
+                enabled: true, // Ensure tooltips are enabled
+                mode: 'nearest', // Highlight the nearest data point
+                intersect: false, // Show the tooltip even when not directly over a data point
+                animation: {
+                    duration: 0, // Disable tooltip animation for instant display
+                },
+            },
             legend: {
                 position: 'top',
                 labels: { font: { size: 14 }, color: 'rgba(255, 255, 255, 0.8)' },
@@ -256,6 +264,14 @@ const powerChart = new Chart(powerCtx, {
     options: {
         responsive: true,
         plugins: {
+            tooltip: {
+                enabled: true, // Ensure tooltips are enabled
+                mode: 'nearest', // Highlight the nearest data point
+                intersect: false, // Show the tooltip even when not directly over a data point
+                animation: {
+                    duration: 0, // Disable tooltip animation for instant display
+                },
+            },
             legend: {
                 position: 'top',
                 labels: {
