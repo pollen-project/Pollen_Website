@@ -81,7 +81,7 @@ h1, h2, p {
 /* ===========================
    Card Styles
    =========================== */
-.card, .power-card, .gps-card {
+.card, .power-card, .gps-card, .battery-card  {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -98,7 +98,7 @@ h1, h2, p {
     box-sizing: border-box;
 }
 
-.card h2, .power-card h2, .gps-card h2 {
+.card h2, .power-card h2, .gps-card h2, .battery-card h2 {
     font-size: 1.5rem;
     font-weight: bold;
     color: #ffffff;
@@ -126,7 +126,7 @@ h1, h2, p {
 /* ===========================
    Grid Layouts
    =========================== */
-.sensor-grid, .gps-grid, .power-grid {
+.sensor-grid, .gps-grid, .power-grid, .battery-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
@@ -134,7 +134,7 @@ h1, h2, p {
     margin-bottom: 15px;
 }
 
-.sensor-grid p, .gps-grid p, .power-grid p {
+.sensor-grid p, .gps-grid p, .power-grid p, .battery-grid p {
     font-size: 1.1rem;
     line-height: 1.6;
     color: #f9f9f9;

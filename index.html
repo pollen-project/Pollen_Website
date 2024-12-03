@@ -49,16 +49,29 @@
                     <p>Solar Current (Isol): <span id="isol">--</span> mA</p>
                     <p>Battery Voltage (Vbat): <span id="vbat">--</span> V</p>
                     <p>Battery Current (Ibat): <span id="ibat">--</span> mA</p>
-                    <p>Battery Percentage: <span id="battery-percentage">--</span> %</p>
-                    <p>Time Left: <span id="time-left">--</span></p>
-                    <p class="is-charging">Is Charging: <span id="isCharging">🔴</span></p>
-                    <p class="pgood">PGood: <span id="pgood">🔴</span></p>
                 </div>
                 <button class="toggle-button" onclick="toggleChart('powerChartContainer')">Show/Hide Chart</button>
                 <div class="chart-container" id="powerChartContainer" style="display: none;">
                     <h3 style="text-align: center;">Historical Data for Power</h3>
                     <canvas id="powerChart"></canvas>
                     <button id="exportPowerDataButton" class="export-button">Export Power Data to CSV</button>
+                </div>
+            </div>
+
+            <!-- Battery Data Card -->
+            <div class="battery-card">
+                <h2>Battery Data 🔋</h2>
+                <div class="battery-grid">
+                    <p>Battery Percentage: <span id="battery-percentage">--</span> %</p>
+                    <p>Time Left: <span id="time-left">--</span></p>
+                    <p class="is-charging">Is Charging: <span id="isCharging">🔴</span></p>
+                    <p class="pgood">PGood: <span id="pgood">🔴</span></p>
+                </div>
+                <button class="toggle-button" onclick="toggleChart('batteryChartContainer')">Show/Hide Chart</button>
+                <div class="chart-container" id="batteryChartContainer" style="display: none;">
+                    <h3 style="text-align: center;">Historical Data for Battery</h3>
+                    <canvas id="batteryChart"></canvas>
+                    <button id="exportBatteryDataButton" class="export-button">Export Battery Data to CSV</button>
                 </div>
             </div>
 
