@@ -393,14 +393,15 @@ function updateChartData(data) {
     // Update Battery Chart
     if (data.power) {
         const vbat = data.power.Vbat / 1000;
-        const isCharging = data.power.is_charging ? 1 : 0;
-        const pgood = data.power.pgood ? 1 : 0;
+        const isCharging = data.power.is_charging ? 1 : 0; // Binary value
+        const pgood = data.power.pgood ? 1 : 0; // Binary value
         const batteryPercentage = Math.max(0, Math.min(100, ((vbat - 3) / (4.2 - 3)) * 100));
 
+        // Add to battery chart
         batteryChart.data.labels.push(now);
         batteryChart.data.datasets[0].data.push(batteryPercentage);
-        batteryChart.data.datasets[1].data.push(isCharging);
-        batteryChart.data.datasets[2].data.push(pgood);
+        batteryChart.data.datasets[1].data.push(isCharging); // Ensure 1/0 value is pushed
+        batteryChart.data.datasets[2].data.push(pgood); // Ensure 1/0 value is pushed
 
         if (batteryChart.data.labels.length > 100) {
             batteryChart.data.labels.shift();
@@ -467,18 +468,20 @@ function exportPowerData() {
 function exportBatteryData() {
     const csvRows = [];
     const headers = ['Time', 'Battery Percentage (%)', 'Is Charging', 'PGood'];
-    csvRows.push(headers.join(','));
+    csvRows.push(headers.join(',')); // Add header row
 
+    // Loop through chart data to generate CSV rows
     batteryChart.data.labels.forEach((label, i) => {
         const row = [
             label,
-            batteryChart.data.datasets[0].data[i]?.toFixed(0) || '',
-            batteryChart.data.datasets[1].data[i] || '',
-            batteryChart.data.datasets[2].data[i] || '',
+            batteryChart.data.datasets[0].data[i]?.toFixed(0) || '--', // Battery Percentage
+            batteryChart.data.datasets[1].data[i] || '0', // Is Charging (1/0)
+            batteryChart.data.datasets[2].data[i] || '0', // PGood (1/0)
         ];
-        csvRows.push(row.join(','));
+        csvRows.push(row.join(',')); // Add row to CSV
     });
 
+    // Create and download the CSV file
     const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
