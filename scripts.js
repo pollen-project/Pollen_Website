@@ -477,26 +477,18 @@ function exportPowerData() {
     URL.revokeObjectURL(url);
 }
 
-// Function to handle chart resizing
-function adjustCharts() {
+window.addEventListener('resize', () => {
     const width = window.innerWidth;
     const chartContainers = document.querySelectorAll('.chart-container');
 
     chartContainers.forEach(container => {
-        const chartCanvas = container.querySelector('canvas');
-        if (chartCanvas) {
-            if (width < 768) {
-                chartCanvas.style.height = '250px';
-            } else {
-                chartCanvas.style.height = '300px';
-            }
+        if (width < 768) {
+            container.style.height = '300px';
+        } else {
+            container.style.height = 'auto';
         }
     });
-}
-
-// Call adjustCharts on page load and resize
-window.addEventListener('load', adjustCharts);
-window.addEventListener('resize', adjustCharts);
+});
 
 // Attach the export functions to the buttons
 document.getElementById('exportDataButton').addEventListener('click', exportSensorData);
