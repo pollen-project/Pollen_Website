@@ -45,20 +45,28 @@ client.on('message', (topic, message) => {
 function updateDashboard(data) {
     // Update sensor data
     if (data.dht22) {
-        document.getElementById('temp1').textContent = data.dht22[0]?.temperature?.toFixed(1) || '--';
-        document.getElementById('humidity1').textContent = data.dht22[0]?.humidity?.toFixed(1) || '--';
-        document.getElementById('temp2').textContent = data.dht22[1]?.temperature?.toFixed(1) || '--';
-        document.getElementById('humidity2').textContent = data.dht22[1]?.humidity?.toFixed(1) || '--';
+        document.getElementById('temp1').textContent = data.dht22[0]?.t?.toFixed(1) || '--'; 
+        document.getElementById('humidity1').textContent = data.dht22[0]?.rh?.toFixed(1) || '--';
+        document.getElementById('temp2').textContent = data.dht22[1]?.t?.toFixed(1) || '--'; 
+        document.getElementById('humidity2').textContent = data.dht22[1]?.rh?.toFixed(1) || '--'; 
     }
 
     // Update GPS data
     if (data.gps) {
-        const nmeaSentences = data.gps.split('\n');
-        nmeaSentences.forEach(sentence => gps.update(sentence));
-        const latitude = gps.state.lat || null;
-        const longitude = gps.state.lon || null;
+        const latitude = data.gps.latitude || null;
+        const longitude = data.gps.longitude || null;
+        const altitude = data.gps.altitude || null;
+        const speed = data.gps.speed || null;
+        const satellitesConnected = data.gps.satellites_connected || null;
+
+        // Update DOM elements for GPS
         document.getElementById('latitude').textContent = latitude ? latitude.toFixed(6) : '--';
         document.getElementById('longitude').textContent = longitude ? longitude.toFixed(6) : '--';
+        document.getElementById('altitude').textContent = altitude !== null ? altitude.toFixed(1) + ' m' : '--';
+        document.getElementById('speed').textContent = speed !== null ? speed.toFixed(1) + ' km/h' : '--';
+        document.getElementById('satellites-connected').textContent = satellitesConnected !== null ? satellitesConnected : '--';
+
+        // Update the map marker
         if (latitude && longitude) {
             marker.setLatLng([latitude, longitude]);
             map.setView([latitude, longitude], 13);
