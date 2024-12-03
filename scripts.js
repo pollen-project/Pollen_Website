@@ -77,11 +77,12 @@ function updateDashboard(data) {
     }
 
     // Update Power Data
+    // Update Power Data
     if (data.power) {
         const vsol = (data.power.Vsol / 1000).toFixed(2); // Convert to volts
         const vbat = (data.power.Vbat / 1000).toFixed(2); // Convert to volts
         const isol = data.power.Isol.toFixed(0);
-        const ibat = Math.abs(data.power.Ibat); // Ensure current is positive
+        const ibat = data.power.Ibat.toFixed(0); // Keep the original value with the sign
         const isCharging = data.power.is_charging ? "🟢" : "🔴";
         const pgood = data.power.pgood ? "🟢" : "🔴";
 
@@ -96,8 +97,8 @@ function updateDashboard(data) {
         const remainingCapacity = (maxCapacity * batteryPercentage) / 100;
 
         // Estimate remaining time (hours)
-        let timeLeftHours = remainingCapacity / ibat;
-        if (!isFinite(timeLeftHours) || ibat === 0) timeLeftHours = "--"; // Handle division by zero
+        let timeLeftHours = remainingCapacity / Math.abs(data.power.Ibat); // Use absolute value for calculation
+        if (!isFinite(timeLeftHours) || data.power.Ibat === 0) timeLeftHours = "--"; // Handle division by zero
 
         // Convert to days
         const timeLeftDays = timeLeftHours !== "--" ? (timeLeftHours / 24).toFixed(1) : "--";
@@ -106,7 +107,7 @@ function updateDashboard(data) {
         document.getElementById('vsol').textContent = vsol;
         document.getElementById('vbat').textContent = vbat;
         document.getElementById('isol').textContent = isol;
-        document.getElementById('ibat').textContent = ibat.toFixed(0);
+        document.getElementById('ibat').textContent = ibat; // Correctly display the value with the sign
         document.getElementById('isCharging').textContent = isCharging;
         document.getElementById('pgood').textContent = pgood;
         document.getElementById('battery-percentage').textContent = batteryPercentage.toFixed(0);
@@ -316,6 +317,24 @@ const powerChart = new Chart(powerCtx, {
     },
 });
 
+window.addEventListener('resize', () => {
+    const width = window.innerWidth;
+
+    // Adjust chart containers
+    const chartContainers = document.querySelectorAll('.chart-container');
+    chartContainers.forEach(container => {
+        if (width < 768) {
+            container.style.height = 'auto'; // Let the height grow naturally
+        } else {
+            container.style.height = 'auto'; // Adjust to content
+        }
+    });
+
+    // Resize charts dynamically
+    if (sensorChart) sensorChart.resize();
+    if (powerChart) powerChart.resize();
+});
+
 // Function to update both charts with data
 function updateChartData(data) {
     const now = new Date().toLocaleTimeString();
@@ -476,19 +495,6 @@ function exportPowerData() {
     // Clean up URL object
     URL.revokeObjectURL(url);
 }
-
-window.addEventListener('resize', () => {
-    const width = window.innerWidth;
-    const chartContainers = document.querySelectorAll('.chart-container');
-
-    chartContainers.forEach(container => {
-        if (width < 768) {
-            container.style.height = '300px';
-        } else {
-            container.style.height = 'auto';
-        }
-    });
-});
 
 // Attach the export functions to the buttons
 document.getElementById('exportDataButton').addEventListener('click', exportSensorData);
