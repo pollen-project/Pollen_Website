@@ -32,7 +32,7 @@
                     <p>Outside Humidity: <span id="humidity2">--</span> %</p>
                 </div>
                 <!-- Drop-down Button -->
-                <button class="toggle-button" onclick="toggleChart('sensorChartContainer')">Show/Hide Chart</button>
+                <button id="toggleSensorChart" class="toggle-button">Show/Hide Sensor Chart</button>
                 <!-- Historical Data Charts -->
                 <div class="chart-container" id="sensorChartContainer" style="display: none;">
                     <h3 style="text-align: center;">Historical Data for Temperature & Humidity</h3>
@@ -50,7 +50,8 @@
                     <p>Battery Voltage (Vbat): <span id="vbat">--</span> V</p>
                     <p>Battery Current (Ibat): <span id="ibat">--</span> mA</p>
                 </div>
-                <button class="toggle-button" onclick="toggleChart('powerChartContainer')">Show/Hide Chart</button>
+                <!-- Add ID for toggle button -->
+                <button id="togglePowerChart" class="toggle-button">Show/Hide Power Chart</button>
                 <div class="chart-container" id="powerChartContainer" style="display: none;">
                     <h3 style="text-align: center;">Historical Data for Power</h3>
                     <canvas id="powerChart"></canvas>
@@ -67,7 +68,8 @@
                     <p class="is-charging">Is Charging: <span id="isCharging">🔴</span></p>
                     <p class="pgood">PGood: <span id="pgood">🔴</span></p>
                 </div>
-                <button class="toggle-button" onclick="toggleChart('batteryChartContainer')">Show/Hide Chart</button>
+                <!-- Add ID for toggle button -->
+                <button id="toggleBatteryChart" class="toggle-button">Show/Hide Battery Chart</button>
                 <div class="chart-container" id="batteryChartContainer" style="display: none;">
                     <h3 style="text-align: center;">Historical Data for Battery</h3>
                     <canvas id="batteryChart"></canvas>

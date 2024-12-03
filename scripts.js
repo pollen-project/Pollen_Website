@@ -497,6 +497,24 @@ document.getElementById('exportDataButton').addEventListener('click', exportSens
 document.getElementById('exportPowerDataButton').addEventListener('click', exportPowerData);
 document.getElementById('exportBatteryDataButton').addEventListener('click', exportBatteryData);
 
-document.getElementById('toggleSensorChart').addEventListener('click', () => toggleChartWithResize('sensorChartContainer'));
-document.getElementById('togglePowerChart').addEventListener('click', () => toggleChartWithResize('powerChartContainer'));
-document.getElementById('toggleBatteryChart').addEventListener('click', () => toggleChartWithResize('batteryChartContainer'));
+// Correctly add toggle button handlers
+const toggleSensorButton = document.getElementById('toggleSensorChart');
+if (toggleSensorButton) {
+    toggleSensorButton.addEventListener('click', () => toggleChartWithResize('sensorChartContainer'));
+} else {
+    console.error("Toggle Sensor Chart button not found.");
+}
+
+const togglePowerButton = document.getElementById('togglePowerChart');
+if (togglePowerButton) {
+    togglePowerButton.addEventListener('click', () => toggleChartWithResize('powerChartContainer'));
+} else {
+    console.error("Toggle Power Chart button not found.");
+}
+
+const toggleBatteryButton = document.getElementById('toggleBatteryChart');
+if (toggleBatteryButton) {
+    toggleBatteryButton.addEventListener('click', () => toggleChartWithResize('batteryChartContainer'));
+} else {
+    console.error("Toggle Battery Chart button not found.");
+}
