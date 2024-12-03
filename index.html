@@ -2,8 +2,8 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>IoT Pollen Dashboard</title>
+        <meta name="viewport" content="width=1200, initial-scale=1.0, user-scalable=yes">
+        <title>Pollen Dashboard</title>
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <link rel="stylesheet" href="styles.css" />
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,7 +14,7 @@
     <img src="Pollen_Logo.png" alt="Project Pollen Logo" class="logo-top-right" />
     <!-- Header -->
     <div class="header fade-in">
-        <h1>Pollen Dashboard</h1>
+        <h1>IoT Pollen Dashboard</h1>
         <p>Real-Time Pollen & Data Monitoring</p>
     </div>
 
@@ -22,7 +22,7 @@
     <div class="container">
         <!-- Cards -->
         <div class="grid">
-            <!-- Sensor Data -->
+            <!-- Sensor Data Card -->
             <div class="card">
                 <h2>Sensor Data 🌤️</h2>
                 <div class="sensor-grid">
@@ -31,17 +31,18 @@
                     <p>Outside Temperature: <span id="temp2">--</span> °C</p>
                     <p>Outside Humidity: <span id="humidity2">--</span> %</p>
                 </div>
+                <!-- Drop-down Button -->
                 <button class="toggle-button" onclick="toggleChart('sensorChartContainer')">Show/Hide Chart</button>
-                <!-- Historical Data Chart (Removed card wrapper) -->
-                <div id="sensorChartContainer" style="display: none;">
+                <!-- Historical Data Charts -->
+                <div class="chart-container" id="sensorChartContainer" style="display: none;">
                     <h3 style="text-align: center;">Historical Data for Temperature & Humidity</h3>
                     <canvas id="sensorChart"></canvas>
                     <button id="exportDataButton" class="export-button">Export Data to CSV</button>
                 </div>
             </div>
 
-            <!-- Power Data -->
-            <div class="card">
+            <!-- Power Data Card -->
+            <div class="power-card">
                 <h2>Power Data ⚡️</h2>
                 <div class="power-grid">
                     <p>Solar Voltage (Vsol): <span id="vsol">--</span> V</p>
@@ -54,8 +55,7 @@
                     <p class="pgood">PGood: <span id="pgood">🔴</span></p>
                 </div>
                 <button class="toggle-button" onclick="toggleChart('powerChartContainer')">Show/Hide Chart</button>
-                <!-- Historical Data Chart (Removed card wrapper) -->
-                <div id="powerChartContainer" style="display: none;">
+                <div class="chart-container" id="powerChartContainer" style="display: none;">
                     <h3 style="text-align: center;">Historical Data for Power</h3>
                     <canvas id="powerChart"></canvas>
                     <button id="exportPowerDataButton" class="export-button">Export Power Data to CSV</button>

@@ -157,8 +157,7 @@ h1, h2, p {
     align-items: center;
     width: 100%;
     box-sizing: border-box;
-    overflow: visible; /* Allow content to expand */
-    height: auto; /* Automatically adjust based on child elements */
+    overflow: hidden;
 }
 
 .card .chart-container h3, .power-card .chart-container h3 {
@@ -169,23 +168,26 @@ h1, h2, p {
 }
 
 .card #sensorChart, .power-card #powerChart {
-    display: block;
     width: 100%;
-    height: 100%; /* Allow the canvas to expand with the container */
-    max-height: none; /* Remove restrictive max height */
+    height: auto;
+    max-width: none;
     aspect-ratio: 16 / 9;
 }
 
 /* Responsive Chart Adjustments */
 @media (max-width: 768px) {
+    .card .chart-container, .power-card .chart-container {
+        margin-bottom: 20px;
+    }
+
     .card #sensorChart, .power-card #powerChart {
-        max-height: 250px; /* Smaller height for narrow screens */
+        height: 300px; /* Adjust chart height for smaller screens */
     }
 }
 
 @media (max-width: 480px) {
     .card #sensorChart, .power-card #powerChart {
-        max-height: 200px; /* Further reduce height for very small screens */
+        height: 250px; /* Further reduce chart height */
     }
 }
 
