@@ -67,19 +67,55 @@ function updateDashboard(data) {
 
     // Update power and battery data
     if (data.power) {
-        // Update values for the power data card
-        document.getElementById('vsol').textContent = (data.power.Vsol / 1000).toFixed(2) || '--';
-        document.getElementById('isol').textContent = data.power.Isol?.toFixed(0) || '--';
-        document.getElementById('vbat').textContent = (data.power.Vbat / 1000).toFixed(2) || '--';
-        document.getElementById('ibat').textContent = data.power.Ibat?.toFixed(0) || '--';
+        const Vsol = (data.power.Vsol / 1000).toFixed(2) || '--'; // Solar Voltage in volts
+        const Isol = data.power.Isol?.toFixed(0) || '--'; // Solar Current in mA
+        const Vbat = data.power.Vbat / 1000; // Battery Voltage in volts
+        const Ibat = data.power.Ibat || 0; // Battery Current in mA
     
-        // Update battery-related info
-        const vbat = data.power.Vbat / 1000;
-        const isCharging = data.power.is_charging ? "🟢" : "🔴";
-        const pgood = data.power.pgood ? "🟢" : "🔴";
-        document.getElementById('battery-percentage').textContent = ((vbat - 3) / (4.2 - 3) * 100).toFixed(0);
-        document.getElementById('isCharging').textContent = isCharging;
-        document.getElementById('pgood').textContent = pgood;
+        // Update power data card
+        document.getElementById('vsol').textContent = Vsol;
+        document.getElementById('isol').textContent = Isol;
+        document.getElementById('vbat').textContent = Vbat.toFixed(2) || '--';
+        document.getElementById('ibat').textContent = Ibat.toFixed(0) || '--'; // Display in mA
+    
+        // Battery parameters (adjust if multiple cells in series)
+        const batteryCapacity = 1800; // Battery capacity in mAh (single cell)
+        const minVoltage = 3.0; // Minimum battery voltage (single cell)
+        const maxVoltage = 4.2; // Maximum battery voltage (single cell)
+    
+        // Calculate battery percentage
+        const batteryPercentage = Math.max(
+            0,
+            Math.min(100, ((Vbat - minVoltage) / (maxVoltage - minVoltage)) * 100)
+        ).toFixed(0);
+    
+        // Calculate remaining capacity in mAh
+        const remainingCapacity = (batteryPercentage / 100) * batteryCapacity;
+    
+        // Calculate time left, even when charging
+        let timeLeft = '--';
+        if (Ibat !== 0) {
+            // Convert Ibat from mA to A for calculations
+            const adjustedIbat = Math.abs(Ibat / 1000); // Ensure positive current in A
+            if (adjustedIbat > 0) {
+                const hoursLeft = (remainingCapacity / (adjustedIbat * 1000)).toFixed(2); // Convert Ah to mAh
+                const daysLeft = (hoursLeft / 24).toFixed(1); // Days
+                timeLeft = `${hoursLeft} hours (${daysLeft} days)`;
+            }
+        }
+    
+        // Update DOM elements
+        document.getElementById('battery-percentage').textContent = batteryPercentage || '--';
+        document.getElementById('time-left').textContent = timeLeft;
+        document.getElementById('isCharging').textContent = data.power.is_charging ? "🟢" : "🔴";
+        document.getElementById('pgood').textContent = data.power.pgood ? "🟢" : "🔴";
+    
+        // Debugging logs
+        console.log(`Battery Percentage: ${batteryPercentage}%`);
+        console.log(`Remaining Capacity: ${remainingCapacity} mAh`);
+        console.log(`Current (Ibat): ${Ibat} mA`);
+        console.log(`Converted Current (Ibat in A): ${(Ibat / 1000).toFixed(4)} A`);
+        console.log(`Time Left: ${timeLeft}`);
     }
 }
 
@@ -497,24 +533,7 @@ document.getElementById('exportDataButton').addEventListener('click', exportSens
 document.getElementById('exportPowerDataButton').addEventListener('click', exportPowerData);
 document.getElementById('exportBatteryDataButton').addEventListener('click', exportBatteryData);
 
-// Correctly add toggle button handlers
-const toggleSensorButton = document.getElementById('toggleSensorChart');
-if (toggleSensorButton) {
-    toggleSensorButton.addEventListener('click', () => toggleChartWithResize('sensorChartContainer'));
-} else {
-    console.error("Toggle Sensor Chart button not found.");
-}
-
-const togglePowerButton = document.getElementById('togglePowerChart');
-if (togglePowerButton) {
-    togglePowerButton.addEventListener('click', () => toggleChartWithResize('powerChartContainer'));
-} else {
-    console.error("Toggle Power Chart button not found.");
-}
-
-const toggleBatteryButton = document.getElementById('toggleBatteryChart');
-if (toggleBatteryButton) {
-    toggleBatteryButton.addEventListener('click', () => toggleChartWithResize('batteryChartContainer'));
-} else {
-    console.error("Toggle Battery Chart button not found.");
-}
+// Add toggle button handlers
+document.getElementById('toggleSensorChart').addEventListener('click', () => toggleChartWithResize('sensorChartContainer'));
+document.getElementById('togglePowerChart').addEventListener('click', () => toggleChartWithResize('powerChartContainer'));
+document.getElementById('toggleBatteryChart').addEventListener('click', () => toggleChartWithResize('batteryChartContainer'));
