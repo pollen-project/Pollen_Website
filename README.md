@@ -1,84 +1,82 @@
 # 🌾 Pollen Website
 
-Welcome to the **Pollen Website**, a real-time IoT dashboard designed to monitor and display sensor data for environmental and power parameters. This project is part of the **Pollen Project** and showcases the integration of IoT devices, real-time data visualization, and a user-friendly interface.
+Welcome to the **Pollen Website**, a real-time IoT dashboard designed to monitor and visualize sensor, power, and GPS data for environmental tracking and analysis. This project is part of the **Pollen Project** and integrates IoT devices, real-time data processing, and a user-friendly interface.
 
 ---
 
 ## 🚀 Features
 
 ### 🌤️ **Sensor Data**
-- **Box Temperature & Humidity**: Displays the temperature and humidity levels inside the pollen collection box.
-- **Outside Temperature & Humidity**: Shows environmental temperature and humidity outside the box.
+- **Box Temperature & Humidity**: Displays real-time temperature and humidity inside the pollen collection box.
+- **Outside Temperature & Humidity**: Monitors environmental conditions outside the box.
 - **Historical Data Visualization**:
-  - Interactive graph for temperature and humidity trends.
-  - Export historical data to CSV for further analysis.
+  - Interactive line charts for temperature and humidity trends.
+  - Export historical sensor data to CSV for further analysis.
 
 ### ⚡ **Power Data**
-- **Solar Voltage & Current**: Real-time monitoring of solar panel performance.
-- **Battery Voltage & Current**: Tracks battery health and charging status.
+- **Solar Voltage & Current**: Tracks solar panel performance in real time.
+- **Battery Voltage & Current**: Monitors battery health and performance.
 - **Battery Percentage & Time Left**:
   - Calculates remaining battery capacity in percentage.
-  - Estimates time left before the battery is depleted.
+  - Estimates battery life duration based on current usage.
 - **Indicators**:
-  - **Charging Status**: Displays if the battery is charging (`🟢` or `🔴`).
-  - **PGood Status**: Indicates power supply status.
+  - **Charging Status**: Shows whether the battery is charging (`🟢` or `🔴`).
+  - **PGood Status**: Indicates power supply health.
 - **Historical Data Visualization**:
-  - Interactive graph for power-related trends (voltage, current, battery percentage).
-  - Export historical power data to CSV.
+  - Charts for power-related trends, including voltage and current.
+  - Export power data to CSV files.
 
 ### 🛰️ **GPS Data**
-- **Location Tracking**: Displays latitude, longitude, and altitude of the device in real time.
-- **Speed**: Tracks the speed of the device.
-- **Satellites Connected**: Displays the number of satellites connected to the GPS module.
-- **Interactive Map**: A live map showing the current location of the device.
+- **Location Tracking**: Displays latitude, longitude, altitude, and speed in real time.
+- **Satellites Connected**: Number of satellites connected for enhanced accuracy.
+- **Interactive Map**: Real-time location tracking using Leaflet.js.
 
 ---
 
 ## 🌐 Live Demo
 
-You can access the live version of this website at:
+Access the live version of the dashboard here:
 [**Pollen Website**](https://pollen-project.github.io/Pollen_Website/)
 
 ---
 
 ## 📂 Project Structure
 
-- **`index.html`**: The main HTML structure for the website.
-- **`styles.css`**: Styling and animations for the user interface.
-- **`scripts.js`**: Handles real-time data updates, charts, and MQTT communication.
-- **`data.json`**: Example dataset for testing purposes.
-- **`Pollen_Logo.png`**: Logo of the Pollen Project.
+- **`index.html`**: The main HTML structure of the dashboard.
+- **`styles.css`**: Custom styles for the interface, including animations and responsive design.
+- **`scripts.js`**: Handles real-time updates, MQTT communication, and charting logic.
+- **`data.json`**: Example dataset for testing.
+- **`Pollen_Logo.png`**: Logo for branding the project.
 
 ---
 
 ## ⚙️ How It Works
 
 1. **Data Collection**:
-   - IoT sensors (DHT22, GPS, Power modules) gather real-time data.
-   - Data is sent to the MQTT broker (`mqtt.eclipseprojects.io`).
+   - IoT sensors (DHT22, GPS, Power modules) collect real-time data.
+   - Data is sent to an MQTT broker (`mqtt.eclipseprojects.io`).
 
 2. **Data Processing**:
-   - Data is parsed and processed using JavaScript.
-   - The dashboard dynamically updates with the latest sensor readings.
+   - JavaScript processes MQTT messages and updates the dashboard dynamically.
 
 3. **Visualization**:
-   - **Charts**: Powered by Chart.js, the graphs visualize historical trends.
-   - **Map**: Powered by Leaflet.js for real-time location tracking.
+   - **Charts**: Built using Chart.js for sensor, power, and battery data visualization.
+   - **Map**: Powered by Leaflet.js for GPS tracking.
 
 4. **Export Options**:
-   - Export sensor and power data as CSV files with the click of a button.
+   - Export historical data (sensor, power, battery) to CSV with a single click.
 
 ---
 
 ## 🛠️ Technologies Used
 
-- **Frontend**: 
-  - HTML5, CSS3, JavaScript (Vanilla)
+- **Frontend**:
+  - HTML5, CSS3, JavaScript
 - **Libraries**:
   - [Leaflet.js](https://leafletjs.com/) - Interactive maps.
   - [Chart.js](https://www.chartjs.org/) - Data visualization.
   - [MQTT.js](https://github.com/mqttjs/MQTT.js) - MQTT client for real-time communication.
-  - [GPS.js](https://github.com/infusion/GPS.js) - NMEA parsing for GPS data.
+  - [GPS.js](https://github.com/infusion/GPS.js) - Parsing GPS data.
 - **Hosting**:
   - GitHub Pages
 
@@ -111,25 +109,28 @@ Here’s a sample of the JSON data the site processes:
 
 ```json
 {
-  "dht22": [
-    {"temperature": 26.4, "humidity": 60.2},
-    {"temperature": 27.9, "humidity": 49.8}
-  ],
-  "gps": {
-    "latitude": 55.641491,
-    "longitude": 12.080420,
-    "altitude": 15.2,
-    "speed": 0,
-    "satellites_in_view": 8,
-    "satellites_connected": 5
-  },
-  "power": {
-    "Vsol": 8.21,
-    "Isol": 7.81,
-    "Vbat": 16.58,
-    "Ibat": 0.76,
-    "is_charging": true
-  }
+    "dht22": [
+        {"temperature": 26.4, "humidity": 60.2},
+        {"temperature": 27.9, "humidity": 49.8}
+    ],
+    "gps": {
+        "latitude": 55.641491,
+        "longitude": 12.080420,
+        "altitude": 15.2,
+        "speed": 0,
+        "satellites_in_view": 8,
+        "satellites_connected": 5
+    },
+    "power": {
+        "Vsol": "8.21",
+        "Isol": "781",
+        "Vbat": "4.12",
+        "Ibat": "176",
+        "batteryPercentage": "75",
+        "timeLeft": "3.50 hours (0.1 days)",
+        "isCharging": true,
+        "pgood": true
+    }
 }
 ```
 ---
