@@ -368,18 +368,27 @@ function updateChartData(data) {
 
     // Update Sensor Chart
     if (data.dht22) {
-        sensorChart.data.labels.push(now);
-        sensorChart.data.datasets[0].data.push(data.dht22[0]?.temperature || null);
-        sensorChart.data.datasets[1].data.push(data.dht22[0]?.humidity || null);
-        sensorChart.data.datasets[2].data.push(data.dht22[1]?.temperature || null);
-        sensorChart.data.datasets[3].data.push(data.dht22[1]?.humidity || null);
+        const boxTemp = data.dht22[0]?.t ?? null;
+        const boxHumidity = data.dht22[0]?.rh ?? null;
+        const outsideTemp = data.dht22[1]?.t ?? null;
+        const outsideHumidity = data.dht22[1]?.rh ?? null;
 
+        console.log("Sensor Data for Chart:", { boxTemp, boxHumidity, outsideTemp, outsideHumidity });
+
+        // Push data into the chart
+        sensorChart.data.labels.push(now);
+        sensorChart.data.datasets[0].data.push(boxTemp);
+        sensorChart.data.datasets[1].data.push(boxHumidity);
+        sensorChart.data.datasets[2].data.push(outsideTemp);
+        sensorChart.data.datasets[3].data.push(outsideHumidity);
+
+        // Maintain chart data limit
         if (sensorChart.data.labels.length > 100) {
-            sensorChart.data.labels.shift();
-            sensorChart.data.datasets.forEach(dataset => dataset.data.shift());
+            sensorChart.data.labels.shift(); // Remove oldest label
+            sensorChart.data.datasets.forEach(dataset => dataset.data.shift()); // Remove corresponding data
         }
 
-        sensorChart.update();
+        sensorChart.update(); // Refresh the chart
     }
 
     // Update Power Chart
