@@ -53,25 +53,55 @@ function updateDashboard(data) {
 
     // Update GPS data
     if (data.gps) {
-        const latitude = data.gps.latitude || null;
-        const longitude = data.gps.longitude || null;
-        const altitude = data.gps.altitude || null;
-        const speed = data.gps.speed || null;
-        const satellitesConnected = data.gps.satellites_connected || null;
+        const gpsString = data.gps;
+        const gpsLines = gpsString.split("\n");
+        let latitude = null,
+            longitude = null,
+            altitude = null,
+            satellitesConnected = null,
+            speed = null;
 
-        // Update DOM elements for GPS
-        document.getElementById('latitude').textContent = latitude ? latitude.toFixed(6) : '--';
-        document.getElementById('longitude').textContent = longitude ? longitude.toFixed(6) : '--';
-        document.getElementById('altitude').textContent = altitude !== null ? altitude.toFixed(1) + ' m' : '--';
-        document.getElementById('speed').textContent = speed !== null ? speed.toFixed(1) + ' km/h' : '--';
-        document.getElementById('satellites-connected').textContent = satellitesConnected !== null ? satellitesConnected : '--';
+    gpsLines.forEach((line) => {
+        const parts = line.split(",");
+        if (parts[0] === "$GPRMC") {
+            // Extract latitude, longitude, and speed
+            const rawLatitude = parseFloat(parts[3]);
+            const rawLongitude = parseFloat(parts[5]);
 
-        // Update the map marker
-        if (latitude && longitude) {
-            marker.setLatLng([latitude, longitude]);
-            map.setView([latitude, longitude], 13);
+            // Convert from NMEA format (degrees and minutes) to decimal degrees
+            const latDegrees = Math.floor(rawLatitude / 100);
+            const latMinutes = rawLatitude % 100;
+            latitude = latDegrees + latMinutes / 60;
+
+            const lonDegrees = Math.floor(rawLongitude / 100);
+            const lonMinutes = rawLongitude % 100;
+            longitude = lonDegrees + lonMinutes / 60;
+
+            // Adjust for N/S and E/W
+            if (parts[4] === "S") latitude *= -1;
+            if (parts[6] === "W") longitude *= -1;
+
+            speed = parseFloat(parts[7]) * 1.852; // Convert knots to km/h
+        } else if (parts[0] === "$GPGGA") {
+            // Extract altitude and satellites connected
+            altitude = parseFloat(parts[9]);
+            satellitesConnected = parseInt(parts[7], 10);
         }
+    });
+
+    // Update DOM elements for GPS
+    document.getElementById('latitude').textContent = latitude ? latitude.toFixed(6) : '--';
+    document.getElementById('longitude').textContent = longitude ? longitude.toFixed(6) : '--';
+    document.getElementById('altitude').textContent = altitude !== null ? altitude.toFixed(1) + ' m' : '--';
+    document.getElementById('speed').textContent = speed !== null ? speed.toFixed(1) + ' km/h' : '--';
+    document.getElementById('satellites-connected').textContent = satellitesConnected !== null ? satellitesConnected : '--';
+
+    // Update the map marker
+    if (latitude && longitude) {
+        marker.setLatLng([latitude, longitude]);
+        map.setView([latitude, longitude], 13);
     }
+}
 
     // Update power and battery data
     if (data.power) {
