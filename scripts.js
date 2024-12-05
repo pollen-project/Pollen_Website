@@ -21,7 +21,7 @@ const brokerURL = "wss://mqtt.eclipseprojects.io/mqtt";
 const topic = "/pollen";
 const client = mqtt.connect(brokerURL);
 
-client.on('connect', () => {
+client.on("connect", () => {
     console.log("Connected to MQTT broker");
     client.subscribe(topic, (err) => {
         if (err) {
@@ -32,9 +32,15 @@ client.on('connect', () => {
     });
 });
 
-client.on('message', (topic, message) => {
+client.on("message", (topic, message) => {
     const data = JSON.parse(message.toString());
     console.log(`Received data:`, data);
+
+    // Update `lastIbatUpdateTime` if new data contains `Ibat`
+    if (data.power?.Ibat) {
+        lastIbatUpdateTime = Date.now(); // Update the timestamp
+    }
+
     updateDashboard(data);
     updateChartData(data);
 });
@@ -42,6 +48,11 @@ client.on('message', (topic, message) => {
 // ======================
 // Dashboard Update
 // ======================
+let lastIbatUpdateTime = Date.now(); // Keep track of the last time Ibat was updated
+let Ibat = 0; // Default Ibat value (in mAh)
+const DEFAULT_SLEEP_POWER_USAGE = -2800; // in mAh (adjusted for consistency)
+const TIMEOUT_PERIOD = 10000; // 10 seconds in milliseconds
+
 function updateDashboard(data) {
     // Update sensor data
     if (data.dht22) {
@@ -103,59 +114,99 @@ function updateDashboard(data) {
     }
 }
 
-    // Update power and battery data
-    if (data.power) {
-        const Vsol = (data.power.Vsol / 1000).toFixed(2) || '--'; // Solar Voltage in volts
-        const Isol = data.power.Isol?.toFixed(0) || '--'; // Solar Current in mA
-        const Vbat = data.power.Vbat / 1000; // Battery Voltage in volts
-        const Ibat = data.power.Ibat || 0; // Battery Current in mA
+     // Update power data
+     if (data.power) {
+        const Vsol = (data.power.Vsol / 1000).toFixed(2); // Solar Voltage in volts
+        const Vbat = (data.power.Vbat / 1000).toFixed(2); // Battery Voltage in volts
+        Ibat = data.power.Ibat; // Update Ibat from data
     
-        // Update power data card
-        document.getElementById('vsol').textContent = Vsol;
-        document.getElementById('isol').textContent = Isol;
-        document.getElementById('vbat').textContent = Vbat.toFixed(2) || '--';
-        document.getElementById('ibat').textContent = Ibat.toFixed(0) || '--'; // Display in mA
+        // Display the raw Ibat in mA for the UI
+        const displayIbat = Ibat.toFixed(0); // Keep the value in mA for display
     
-        // Battery parameters (adjust if multiple cells in series)
-        const batteryCapacity = 1800; // Battery capacity in mAh (single cell)
-        const minVoltage = 3.0; // Minimum battery voltage (single cell)
-        const maxVoltage = 4.2; // Maximum battery voltage (single cell)
+        // Update DOM for power data
+        document.getElementById("vsol").textContent = Vsol || "--";
+        document.getElementById("vbat").textContent = Vbat || "--";
+        document.getElementById("ibat").textContent = `${displayIbat}`;
     
-        // Calculate battery percentage
-        const batteryPercentage = Math.max(
-            0,
-            Math.min(100, ((Vbat - minVoltage) / (maxVoltage - minVoltage)) * 100)
-        ).toFixed(0);
-    
-        // Calculate remaining capacity in mAh
-        const remainingCapacity = (batteryPercentage / 100) * batteryCapacity;
-    
-        // Calculate time left, even when charging
-        let timeLeft = '--';
-        if (Ibat !== 0) {
-            // Convert Ibat from mA to A for calculations
-            const adjustedIbat = Math.abs(Ibat / 1000); // Ensure positive current in A
-            if (adjustedIbat > 0) {
-                const hoursLeft = (remainingCapacity / (adjustedIbat * 1000)).toFixed(2); // Convert Ah to mAh
-                const daysLeft = (hoursLeft / 24).toFixed(1); // Days
-                timeLeft = `${hoursLeft} hours (${daysLeft} days)`;
-            }
-        }
-    
-        // Update DOM elements
-        document.getElementById('battery-percentage').textContent = batteryPercentage || '--';
-        document.getElementById('time-left').textContent = timeLeft;
-        document.getElementById('isCharging').textContent = data.power.is_charging ? "🟢" : "🔴";
-        document.getElementById('pgood').textContent = data.power.pgood ? "🟢" : "🔴";
-    
-        // Debugging logs
-        console.log(`Battery Percentage: ${batteryPercentage}%`);
-        console.log(`Remaining Capacity: ${remainingCapacity} mAh`);
-        console.log(`Current (Ibat): ${Ibat} mA`);
-        console.log(`Converted Current (Ibat in A): ${(Ibat / 1000).toFixed(4)} A`);
-        console.log(`Time Left: ${timeLeft}`);
+        // Perform calculations for real Ibat
+        calculateTimeLeft(Vbat, Ibat, false); // Pass false for isFake
     }
 }
+
+// ======================
+// Calculate Time Left
+// ======================
+function calculateTimeLeft(Vbat, Ibat, isFake = false) {
+    const batteryCapacity = 1800; // Battery capacity in mAh (single cell)
+    const minVoltage = 3.0; // Minimum voltage (single cell)
+    const maxVoltage = 4.2; // Maximum voltage (single cell)
+
+    // Calculate battery percentage
+    const batteryPercentage = Math.max(
+        0,
+        Math.min(100, ((Vbat - minVoltage) / (maxVoltage - minVoltage)) * 100)
+    ).toFixed(0);
+
+    // Calculate remaining capacity in mAh
+    const remainingCapacity = (batteryPercentage / 100) * batteryCapacity;
+
+    // Debug logs
+    console.log(`Battery Percentage: ${batteryPercentage}%`);
+    console.log(`Remaining Capacity: ${remainingCapacity} mAh`);
+    console.log(`Current (Ibat): ${Ibat} ${isFake ? "fake mAh" : "real mA"}`);
+
+    let timeLeft = "--";
+
+    if (isFake) {
+        // Fake Ibat Calculation: Multiply by 1000 to adjust the scale
+        const adjustedIbat = Math.abs(Ibat) * 1000; // Convert to proper scale for fake Ibat
+        if (adjustedIbat > 0) {
+            const hoursLeft = ((remainingCapacity / adjustedIbat) * 1000000).toFixed(2); // Hours
+            const daysLeft = (hoursLeft / 24).toFixed(1); // Days
+            timeLeft = `${hoursLeft} hours (${daysLeft} days)`;
+        }
+    } else {
+        // Real Ibat Calculation: Divide by 1000 to convert from mA to Ah
+        const adjustedIbat = Math.abs(Ibat) / 1000; // Convert mA to Ah for real Ibat
+        if (adjustedIbat > 0) {
+            const hoursLeft = ((remainingCapacity / adjustedIbat) / 1000).toFixed(2); // Hours
+            const daysLeft = (hoursLeft / 24).toFixed(1); // Days
+            timeLeft = `${hoursLeft} hours (${daysLeft} days)`;
+        }
+    }
+
+    if (timeLeft === "--") {
+        console.warn("Ibat too small or invalid for calculation.");
+        timeLeft = "Insufficient Current";
+    }
+
+    // Update DOM for time left
+    document.getElementById("battery-percentage").textContent = batteryPercentage || "--";
+    document.getElementById("time-left").textContent = timeLeft;
+
+    console.log(`Time Left: ${timeLeft}`);
+}
+
+// ======================
+// Timeout Logic
+// ======================
+setInterval(() => {
+    const timeSinceLastUpdate = Date.now() - lastIbatUpdateTime;
+
+    if (timeSinceLastUpdate > TIMEOUT_PERIOD) {
+        // Only fallback to default if the timeout has passed
+        Ibat = DEFAULT_SLEEP_POWER_USAGE; // Use default value in mAh
+        console.log("No recent Ibat data, using default sleep mode value.");
+
+        // Display the fallback Ibat
+        const displayIbat = (Ibat / 1000).toFixed(2); // Convert to Ah for display
+        document.getElementById("ibat").textContent = `${displayIbat}`;
+
+        // Perform calculations with fake Ibat
+        const Vbat = parseFloat(document.getElementById("vbat").textContent) || 3.96; // Fallback voltage
+        calculateTimeLeft(Vbat, Ibat, true); // Pass true for isFake
+    }
+}, 1000); // Check every second
 
 // ======================
 // Chart Initialization
