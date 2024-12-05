@@ -30,6 +30,8 @@ client.on("connect", () => {
             console.log(`Subscribed to topic: ${topic}`);
         }
     });
+
+    loadData();
 });
 
 client.on("message", (topic, message) => {
@@ -44,6 +46,32 @@ client.on("message", (topic, message) => {
     updateDashboard(data);
     updateChartData(data);
 });
+
+// ======================
+// Load Stored Data
+// ======================
+async function loadData() {
+    try {
+        const response = await fetch("https://pollen.botondhorvath.com/");
+        if (!response.ok) {
+            throw new Error(`Response status: ${response.status}`);
+        }
+
+        const json = await response.json();
+
+        if (!json || !json.length) {
+            return;
+        }
+
+        updateDashboard(json[0]);
+
+        for (let i = json.length - 1; i > 0; i--) {
+            updateChartData(json[i], new Date(json[i].timestamp).toLocaleTimeString());
+        }
+    } catch (error) {
+        console.error(error.message);
+    }
+}
 
 // ======================
 // Dashboard Update
@@ -463,8 +491,8 @@ const batteryChart = new Chart(batteryCtx, {
 // ======================
 // Chart Data Update
 // ======================
-function updateChartData(data) {
-    const now = new Date().toLocaleTimeString();
+function updateChartData(data, timestamp) {
+    const now = timestamp ?? new Date().toLocaleTimeString();
 
     // Update Sensor Chart
     if (data.dht22) {
