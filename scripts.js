@@ -118,10 +118,12 @@ function updateDashboard(data) {
      if (data.power) {
         const Vsol = (data.power.Vsol / 1000).toFixed(2); // Convert mV to V
         const Vbat = (data.power.Vbat / 1000).toFixed(2); // Convert mV to V
+        const Isol = data.power.Isol; // Solar current in mA
         Ibat = data.power.Ibat; // Current in mA
 
         document.getElementById('vsol').textContent = Vsol || '--';
         document.getElementById('vbat').textContent = Vbat || '--';
+        document.getElementById('isol').textContent = Isol || '--'; // Update solar current
         document.getElementById('ibat').textContent = `${Ibat.toFixed(0)}`;
 
         // Update Is Charging and PGood
