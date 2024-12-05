@@ -116,19 +116,31 @@ function updateDashboard(data) {
 
      // Update power data
      if (data.power) {
-        const Vsol = (data.power.Vsol / 1000).toFixed(2); // Solar Voltage in volts
-        const Vbat = (data.power.Vbat / 1000).toFixed(2); // Battery Voltage in volts
-        Ibat = data.power.Ibat; // Update Ibat from data
-    
-        // Display the raw Ibat in mA for the UI
-        const displayIbat = Ibat.toFixed(0); // Keep the value in mA for display
-    
-        // Update DOM for power data
-        document.getElementById("vsol").textContent = Vsol || "--";
-        document.getElementById("vbat").textContent = Vbat || "--";
-        document.getElementById("ibat").textContent = `${displayIbat}`;
-    
-        // Perform calculations for real Ibat
+        const Vsol = (data.power.Vsol / 1000).toFixed(2); // Convert mV to V
+        const Vbat = (data.power.Vbat / 1000).toFixed(2); // Convert mV to V
+        Ibat = data.power.Ibat; // Current in mA
+
+        document.getElementById('vsol').textContent = Vsol || '--';
+        document.getElementById('vbat').textContent = Vbat || '--';
+        document.getElementById('ibat').textContent = `${Ibat.toFixed(0)} mA`;
+
+        // Update Is Charging and PGood
+        const isChargingElement = document.getElementById('isCharging');
+        const pgoodElement = document.getElementById('pgood');
+
+        // Fix key names for `isCharging` and `pgood`
+        if (data.power.is_charging) {
+            isChargingElement.textContent = '🟢'; // Green for true
+        } else {
+            isChargingElement.textContent = '🔴'; // Red for false
+        }
+
+        if (data.power.pgood) {
+            pgoodElement.textContent = '🟢'; // Green for true
+        } else {
+            pgoodElement.textContent = '🔴'; // Red for false
+        }
+
         calculateTimeLeft(Vbat, Ibat, false); // Pass false for isFake
     }
 }
