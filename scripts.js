@@ -122,13 +122,12 @@ function updateDashboard(data) {
 
         document.getElementById('vsol').textContent = Vsol || '--';
         document.getElementById('vbat').textContent = Vbat || '--';
-        document.getElementById('ibat').textContent = `${Ibat.toFixed(0)} mA`;
+        document.getElementById('ibat').textContent = `${Ibat.toFixed(0)}`;
 
         // Update Is Charging and PGood
         const isChargingElement = document.getElementById('isCharging');
         const pgoodElement = document.getElementById('pgood');
 
-        // Fix key names for `isCharging` and `pgood`
         if (data.power.is_charging) {
             isChargingElement.textContent = '🟢'; // Green for true
         } else {
@@ -141,7 +140,12 @@ function updateDashboard(data) {
             pgoodElement.textContent = '🔴'; // Red for false
         }
 
-        calculateTimeLeft(Vbat, Ibat, false); // Pass false for isFake
+        // Handle positive Ibat (charging state)
+        if (Ibat > 0) {
+            document.getElementById('time-left').textContent = "Indefinitely"; // Display "indefinitely"
+        } else {
+            calculateTimeLeft(Vbat, Ibat, false); // Perform regular calculation for negative Ibat
+        }
     }
 }
 
@@ -159,18 +163,20 @@ function calculateTimeLeft(Vbat, Ibat, isFake = false) {
         Math.min(100, ((Vbat - minVoltage) / (maxVoltage - minVoltage)) * 100)
     ).toFixed(0);
 
+    // Skip time calculation if Ibat is positive
+    if (Ibat > 0) {
+        console.log("Battery is charging, time left is indefinite.");
+        document.getElementById("battery-percentage").textContent = batteryPercentage || "--";
+        document.getElementById("time-left").textContent = "Indefinitely";
+        return;
+    }
+
     // Calculate remaining capacity in mAh
     const remainingCapacity = (batteryPercentage / 100) * batteryCapacity;
-
-    // Debug logs
-    console.log(`Battery Percentage: ${batteryPercentage}%`);
-    console.log(`Remaining Capacity: ${remainingCapacity} mAh`);
-    console.log(`Current (Ibat): ${Ibat} ${isFake ? "fake mAh" : "real mA"}`);
 
     let timeLeft = "--";
 
     if (isFake) {
-        // Fake Ibat Calculation: Multiply by 1000 to adjust the scale
         const adjustedIbat = Math.abs(Ibat) * 1000; // Convert to proper scale for fake Ibat
         if (adjustedIbat > 0) {
             const hoursLeft = ((remainingCapacity / adjustedIbat) * 1000000).toFixed(2); // Hours
@@ -178,7 +184,6 @@ function calculateTimeLeft(Vbat, Ibat, isFake = false) {
             timeLeft = `${hoursLeft} hours (${daysLeft} days)`;
         }
     } else {
-        // Real Ibat Calculation: Divide by 1000 to convert from mA to Ah
         const adjustedIbat = Math.abs(Ibat) / 1000; // Convert mA to Ah for real Ibat
         if (adjustedIbat > 0) {
             const hoursLeft = ((remainingCapacity / adjustedIbat) / 1000).toFixed(2); // Hours
@@ -205,9 +210,9 @@ function calculateTimeLeft(Vbat, Ibat, isFake = false) {
 setInterval(() => {
     const timeSinceLastUpdate = Date.now() - lastIbatUpdateTime;
 
-    if (timeSinceLastUpdate > TIMEOUT_PERIOD) {
-        // Only fallback to default if the timeout has passed
-        Ibat = DEFAULT_SLEEP_POWER_USAGE; // Use default value in mAh
+    if (timeSinceLastUpdate > TIMEOUT_PERIOD && Ibat <= 0) { // Only fallback if Ibat is negative or missing
+        // Use default value in mAh
+        Ibat = DEFAULT_SLEEP_POWER_USAGE; 
         console.log("No recent Ibat data, using default sleep mode value.");
 
         // Display the fallback Ibat
