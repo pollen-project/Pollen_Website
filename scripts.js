@@ -43,8 +43,9 @@ client.on("message", (topic, message) => {
         lastIbatUpdateTime = Date.now(); // Update the timestamp
     }
 
+    const timestamp = new Date().toLocaleTimeString();
     updateDashboard(data);
-    updateChartData(data);
+    updateChartData(data, timestamp);
 });
 
 // ======================
@@ -59,15 +60,33 @@ async function loadData() {
 
         const json = await response.json();
 
-        if (!json || !json.length) {
+        if (!json || json.length === 0) {
             return;
         }
 
-        updateDashboard(json[0]);
+        let lastBatteryPercentage = null; // Track the last known battery percentage
 
-        for (let i = json.length - 1; i > 0; i--) {
-            updateChartData(json[i], new Date(json[i].timestamp).toLocaleTimeString());
+        // Process data in reverse to maintain chronological order
+        for (let i = json.length - 1; i >= 0; i--) {
+            const dataPoint = json[i];
+            const timestamp = new Date(dataPoint.timestamp).toLocaleTimeString();
+
+            // Calculate battery percentage if available
+            const batteryPercentage = dataPoint.power
+                ? Math.max(0, Math.min(100, ((dataPoint.power.Vbat / 1000 - 3) / (4.2 - 3)) * 100)).toFixed(2)
+                : lastBatteryPercentage; // Use last known if not available
+
+            // Update charts with historical data
+            updateChartData(dataPoint, timestamp, batteryPercentage);
+
+            // Update last known battery percentage
+            if (!isNaN(batteryPercentage)) {
+                lastBatteryPercentage = batteryPercentage;
+            }
         }
+
+        // Update dashboard with the latest data point
+        updateDashboard(json[json.length - 1]);
     } catch (error) {
         console.error(error.message);
     }
@@ -149,10 +168,17 @@ function updateDashboard(data) {
         const Isol = data.power.Isol; // Solar current in mA
         Ibat = data.power.Ibat; // Current in mA
 
+        // Calculate battery percentage first
+        const batteryPercentage = Math.max(
+            0,
+            Math.min(100, ((Vbat - 3) / (4.2 - 3)) * 100)
+        ).toFixed(2);
+
         document.getElementById('vsol').textContent = Vsol || '--';
         document.getElementById('vbat').textContent = Vbat || '--';
         document.getElementById('isol').textContent = Isol || '--'; // Update solar current
         document.getElementById('ibat').textContent = `${Ibat.toFixed(0)}`;
+        document.getElementById('battery-percentage').textContent = `${batteryPercentage}`; // Update battery percentage
 
         // Update Is Charging and PGood
         const isChargingElement = document.getElementById('isCharging');
@@ -176,6 +202,9 @@ function updateDashboard(data) {
         } else {
             calculateTimeLeft(Vbat, Ibat, false); // Perform regular calculation for negative Ibat
         }
+
+        // Pass battery percentage to the chart update
+        // updateChartData(data, new Date().toLocaleTimeString(), batteryPercentage);
     }
 }
 
@@ -256,7 +285,7 @@ setInterval(() => {
 }, 1000); // Check every second
 
 // ======================
-// Chart Initialization
+// Senosr Chart Initialization
 // ======================
 const ctx = document.getElementById('sensorChart').getContext('2d');
 const sensorChart = new Chart(ctx, {
@@ -491,7 +520,7 @@ const batteryChart = new Chart(batteryCtx, {
 // ======================
 // Chart Data Update
 // ======================
-function updateChartData(data, timestamp) {
+function updateChartData(data, timestamp, batteryPercentage) {
     const now = timestamp ?? new Date().toLocaleTimeString();
 
     // Update Sensor Chart
@@ -537,22 +566,36 @@ function updateChartData(data, timestamp) {
 
     // Update Battery Chart
     if (data.power) {
-        const vbat = data.power.Vbat / 1000;
-        const isCharging = data.power.is_charging ? 1 : 0; // Binary value
-        const pgood = data.power.pgood ? 1 : 0; // Binary value
-        const batteryPercentage = Math.max(0, Math.min(100, ((vbat - 3) / (4.2 - 3)) * 100));
+        let finalBatteryPercentage;
 
-        // Add to battery chart
-        batteryChart.data.labels.push(now);
-        batteryChart.data.datasets[0].data.push(batteryPercentage);
-        batteryChart.data.datasets[1].data.push(isCharging); // Ensure 1/0 value is pushed
-        batteryChart.data.datasets[2].data.push(pgood); // Ensure 1/0 value is pushed
-
-        if (batteryChart.data.labels.length > 100) {
-            batteryChart.data.labels.shift();
-            batteryChart.data.datasets.forEach(dataset => dataset.data.shift());
+        // Use provided battery percentage if valid
+        if (!isNaN(batteryPercentage)) {
+            finalBatteryPercentage = parseFloat(batteryPercentage); // Convert to float
+        } else {
+            // Retrieve the last known battery percentage from the graph
+            finalBatteryPercentage =
+                batteryChart.data.datasets[0].data.length > 0
+                    ? batteryChart.data.datasets[0].data[batteryChart.data.datasets[0].data.length - 1]
+                    : null; // Use null if no previous data exists
         }
 
+        batteryChart.data.labels.push(now);
+        batteryChart.data.datasets[0].data.push(finalBatteryPercentage);
+
+        // Update other datasets
+        const isCharging = data.power.is_charging ? 1 : 0; // Binary value
+        const pgood = data.power.pgood ? 1 : 0; // Binary value
+
+        batteryChart.data.datasets[1].data.push(isCharging);
+        batteryChart.data.datasets[2].data.push(pgood);
+
+        // Maintain chart data limit (optional: e.g., 100 points)
+        if (batteryChart.data.labels.length > 100) {
+            batteryChart.data.labels.shift(); // Remove oldest label
+            batteryChart.data.datasets.forEach((dataset) => dataset.data.shift()); // Remove corresponding data
+        }
+
+        // Update the chart
         batteryChart.update();
     }
 }
