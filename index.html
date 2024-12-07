@@ -16,6 +16,7 @@
     <div class="header fade-in">
         <h1>Data Hub</h1>
         <p>Real-Time Data Monitoring</p>
+        <p>Last update: <span id="dataTimestamp">--</span></p>
     </div>
 
     <!-- Main Content -->
@@ -45,10 +46,10 @@
             <div class="power-card">
                 <h2>Power Data ⚡️</h2>
                 <div class="power-grid">
-                    <p>Solar Voltage (Vsol): <span id="vsol">--</span> V</p>
-                    <p>Solar Current (Isol): <span id="isol">--</span> mA</p>
-                    <p>Battery Voltage (Vbat): <span id="vbat">--</span> V</p>
-                    <p>Battery Current (Ibat): <span id="ibat">--</span> mA</p>
+                    <p>Solar Voltage: <span id="vsol">--</span> V</p>
+                    <p>Solar Current: <span id="isol">--</span> mA</p>
+                    <p>Battery Voltage: <span id="vbat">--</span> V</p>
+                    <p>Battery Current: <span id="ibat">--</span> mA</p>
                 </div>
                 <!-- Add ID for toggle button -->
                 <button id="togglePowerChart" class="toggle-button">Show/Hide Power Chart</button>

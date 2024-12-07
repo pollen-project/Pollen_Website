@@ -6,19 +6,17 @@ const cors = require('cors')
 const app = express()
 const port = 3000
 
-const brokerURL = "ws://mqtt.eclipseprojects.io/mqtt";
+const brokerURL = "mqtts://mqtt.eclipseprojects.io";
 const topic = "/pollen";
-const mqttClient = mqtt.connect(brokerURL);
+let mqttClient;
 
 const mongoURL = process.env.MONGO_URL
 const mongoClient = new MongoClient(mongoURL);
-let collection;
+let history;
+let devices;
 
-mqttClient.on('connect', async () => {
+async function on_connect() {
     console.log("Connected to MQTT broker");
-
-    await mongoClient.connect();
-    collection = mongoClient.db("pollen").collection('monitoring');
 
     mqttClient.subscribe(topic, (err) => {
         if (err) {
@@ -27,20 +25,65 @@ mqttClient.on('connect', async () => {
             console.log(`Subscribed to topic: ${topic}`);
         }
     });
-});
+}
 
-mqttClient.on('message', async (topic, message) => {
+async function on_message(topic, message) {
     try {
-        const data = JSON.parse(message.toString());
-        data["timestamp"] = new Date();
-        await collection.insertOne(data);
+        const data = JSON.parse(message.toString())
+        data["timestamp"] = new Date()
+
+        const device = await devices.findOne({name: "Test box"}) ?? {}
+
+        if ("dht22" in data && Array.isArray(data.dht22)) {
+            data.dht22 = data.dht22.map(v => v.rh > 100 ? ({t: null, rh: null}) : v)
+            device.dht22 = data.dht22.map((v, i) => !v.rh && device.dht22?.length > i ? device.dht22[i] : v)
+        }
+
+        if ("power" in data) {
+            device.power = data.power
+        }
+
+        if ("gps" in data) {
+            device.gps = data.gps
+        }
+
+        await devices.updateOne(
+            {
+                name: "Test box"
+            },
+            {
+                "$set": {
+                    name: "Test box",
+                    ...device
+                }
+            },
+            {
+                upsert: true
+            })
+        await history.insertOne(data);
     }
     catch (e) {}
-});
+}
+
+(async () => {
+    await mongoClient.connect()
+    const db = mongoClient.db("pollen")
+    devices = db.collection('devices')
+    history = db.collection('monitoring')
+
+    mqttClient = mqtt.connect(brokerURL)
+    mqttClient.on('connect', on_connect)
+    mqttClient.on('message', on_message)
+})()
 
 app.use(cors())
 
-app.get('/', async (req, res) => {
+app.get('/api/devices', async (req, res) => {
+    res.json(await devices.find()
+        .toArray())
+})
+
+app.get('/api/history', async (req, res) => {
     const filters = {}
 
     if ("from" in req.query && "until" in req.query) {
@@ -50,10 +93,10 @@ app.get('/', async (req, res) => {
         }
     }
 
-    res.json(await collection.find(filters)
-    .sort({timestamp: -1})
-    .limit(100)
-    .toArray())
+    res.json(await history.find(filters)
+        .sort({timestamp: -1})
+        .limit(100)
+        .toArray())
 })
 
 app.listen(port, () => {

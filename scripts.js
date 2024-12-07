@@ -51,14 +51,39 @@ client.on("message", (topic, message) => {
 // ======================
 // Load Stored Data
 // ======================
+const apiUrl = "https://pollen.botondhorvath.com/api"
+
+async function getDevice() {
+    const response = await fetch(`${apiUrl}/devices`)
+    if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`)
+    }
+
+    const json = await response.json()
+
+    return json[0]
+}
+
+async function getHistory() {
+    const response = await fetch(`${apiUrl}/history`)
+    if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`)
+    }
+
+    return await response.json()
+}
+
 async function loadData() {
     try {
-        const response = await fetch("https://pollen.botondhorvath.com/");
-        if (!response.ok) {
-            throw new Error(`Response status: ${response.status}`);
-        }
+        const device = await getDevice();
+        // Update dashboard with the latest data point
+        updateDashboard(device);
+    } catch (error) {
+        console.error(error.message);
+    }
 
-        const json = await response.json();
+    try {
+        const json = await getHistory();
 
         if (!json || json.length === 0) {
             return;
@@ -84,9 +109,6 @@ async function loadData() {
                 lastBatteryPercentage = batteryPercentage;
             }
         }
-
-        // Update dashboard with the latest data point
-        updateDashboard(json[json.length - 1]);
     } catch (error) {
         console.error(error.message);
     }
@@ -101,6 +123,16 @@ const DEFAULT_SLEEP_POWER_USAGE = -2800; // in mAh (adjusted for consistency)
 const TIMEOUT_PERIOD = 10000; // 10 seconds in milliseconds
 
 function updateDashboard(data) {
+    // Update timestamp
+    let timestampText = "";
+    const timestampDate = data.timestamp ? new Date(data.timestamp) : new Date();
+    if (timestampDate.valueOf() + 86400000 < new Date().valueOf()) {
+        timestampText = timestampDate.toLocaleDateString();
+        timestampText += " ";
+    }
+    timestampText += timestampDate.toLocaleTimeString();
+    document.getElementById('dataTimestamp').textContent = timestampText;
+
     // Update sensor data
     if (data.dht22) {
         document.getElementById('temp1').textContent = data.dht22[0]?.t?.toFixed(1) || '--'; 
@@ -119,53 +151,53 @@ function updateDashboard(data) {
             satellitesConnected = null,
             speed = null;
 
-    gpsLines.forEach((line) => {
-        const parts = line.split(",");
-        if (parts[0] === "$GPRMC") {
-            // Extract latitude, longitude, and speed
-            const rawLatitude = parseFloat(parts[3]);
-            const rawLongitude = parseFloat(parts[5]);
+        gpsLines.forEach((line) => {
+            const parts = line.split(",");
+            if (parts[0] === "$GPRMC") {
+                // Extract latitude, longitude, and speed
+                const rawLatitude = parseFloat(parts[3]);
+                const rawLongitude = parseFloat(parts[5]);
 
-            // Convert from NMEA format (degrees and minutes) to decimal degrees
-            const latDegrees = Math.floor(rawLatitude / 100);
-            const latMinutes = rawLatitude % 100;
-            latitude = latDegrees + latMinutes / 60;
+                // Convert from NMEA format (degrees and minutes) to decimal degrees
+                const latDegrees = Math.floor(rawLatitude / 100);
+                const latMinutes = rawLatitude % 100;
+                latitude = latDegrees + latMinutes / 60;
 
-            const lonDegrees = Math.floor(rawLongitude / 100);
-            const lonMinutes = rawLongitude % 100;
-            longitude = lonDegrees + lonMinutes / 60;
+                const lonDegrees = Math.floor(rawLongitude / 100);
+                const lonMinutes = rawLongitude % 100;
+                longitude = lonDegrees + lonMinutes / 60;
 
-            // Adjust for N/S and E/W
-            if (parts[4] === "S") latitude *= -1;
-            if (parts[6] === "W") longitude *= -1;
+                // Adjust for N/S and E/W
+                if (parts[4] === "S") latitude *= -1;
+                if (parts[6] === "W") longitude *= -1;
 
-            speed = parseFloat(parts[7]) * 1.852; // Convert knots to km/h
-        } else if (parts[0] === "$GPGGA") {
-            // Extract altitude and satellites connected
-            altitude = parseFloat(parts[9]);
-            satellitesConnected = parseInt(parts[7], 10);
+                speed = parseFloat(parts[7]) * 1.852; // Convert knots to km/h
+            } else if (parts[0] === "$GPGGA") {
+                // Extract altitude and satellites connected
+                altitude = parseFloat(parts[9]);
+                satellitesConnected = parseInt(parts[7], 10);
+            }
+        });
+
+        // Update DOM elements for GPS
+        document.getElementById('latitude').textContent = latitude ? latitude.toFixed(6) : '--';
+        document.getElementById('longitude').textContent = longitude ? longitude.toFixed(6) : '--';
+        document.getElementById('altitude').textContent = altitude !== null ? altitude.toFixed(1) : '--';
+        document.getElementById('speed').textContent = speed !== null ? speed.toFixed(1) : '--';
+        document.getElementById('satellites-connected').textContent = satellitesConnected !== null ? satellitesConnected : '--';
+
+        // Update the map marker
+        if (latitude && longitude) {
+            marker.setLatLng([latitude, longitude]);
+            map.setView([latitude, longitude], 13);
         }
-    });
-
-    // Update DOM elements for GPS
-    document.getElementById('latitude').textContent = latitude ? latitude.toFixed(6) : '--';
-    document.getElementById('longitude').textContent = longitude ? longitude.toFixed(6) : '--';
-    document.getElementById('altitude').textContent = altitude !== null ? altitude.toFixed(1) + ' m' : '--';
-    document.getElementById('speed').textContent = speed !== null ? speed.toFixed(1) + ' km/h' : '--';
-    document.getElementById('satellites-connected').textContent = satellitesConnected !== null ? satellitesConnected : '--';
-
-    // Update the map marker
-    if (latitude && longitude) {
-        marker.setLatLng([latitude, longitude]);
-        map.setView([latitude, longitude], 13);
     }
-}
 
      // Update power data
      if (data.power) {
         const Vsol = (data.power.Vsol / 1000).toFixed(2); // Convert mV to V
         const Vbat = (data.power.Vbat / 1000).toFixed(2); // Convert mV to V
-        const Isol = data.power.Isol; // Solar current in mA
+        const Isol = data.power.Isol.toFixed(0); // Solar current in mA
         Ibat = data.power.Ibat; // Current in mA
 
         // Calculate battery percentage first
