@@ -1,7 +1,9 @@
-const mqtt = require("mqtt");
-const { MongoClient } = require('mongodb');
+const mqtt = require("mqtt")
+const { MongoClient } = require('mongodb')
 const express = require('express')
 const cors = require('cors')
+const multer = require('multer')
+const path = require('path')
 
 const app = express()
 const port = 3000
@@ -14,6 +16,30 @@ const mongoURL = process.env.MONGO_URL
 const mongoClient = new MongoClient(mongoURL);
 let history;
 let devices;
+
+// Add timestamp middleware
+app.use((req, res, next) => {
+    req.requestTimestamp = new Date();
+    next();
+});
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/')
+    },
+    filename: (req, file, cb) => {
+        const deviceName = file.originalname ?? 'unknown'
+        const timestamp = (req.requestTimestamp ?? new Date()).toISOString().slice(0, 19).replaceAll(':', '-')
+
+        const filename = deviceName + '_' + timestamp + '.jpg'
+
+        req.body.deviceName = deviceName
+
+        cb(null, filename)
+    }
+})
+
+const upload = multer({ storage });
 
 async function on_connect() {
     console.log("Connected to MQTT broker");
@@ -79,6 +105,7 @@ async function on_message(topic, message) {
 })()
 
 app.use(cors())
+app.use(express.json())
 
 app.get('/api/devices', async (req, res) => {
     res.json(await devices.find()
@@ -101,6 +128,45 @@ app.get('/api/history', async (req, res) => {
         .toArray())
 })
 
+app.post('/api/upload', upload.single('image'), async (req, res) => {
+    try {
+        const file = req.file
+        const metadata = req.body
+        const timestamp = req.requestTimestamp
+
+        if (!file || !metadata) {
+            return res.status(400).json({ error: 'Image file is required.' })
+        }
+
+        await devices.updateOne(
+            {
+                name: deviceName
+            },
+            {
+                "$set": {
+                    name: metadata.deviceName,
+                    lastImage: file.filename,
+                    timestamp,
+                },
+            },
+            {
+                upsert: true
+            })
+
+        await history.insertOne({
+            name: metadata.deviceName,
+            image: file.filename,
+            timestamp,
+        })
+
+        res.sendStatus(200)
+    }
+    catch(err) {
+        console.error(err)
+        res.status(500).json({ error: 'Internal server error' })
+    }
+})
+
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+    console.log(`Example app listening on port ${port}`)
 })
