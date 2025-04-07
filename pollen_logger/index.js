@@ -29,10 +29,12 @@ async function on_connect() {
 
 async function on_message(topic, message) {
     try {
+        const timestamp = new Date()
         const data = JSON.parse(message.toString())
-        data["timestamp"] = new Date()
-
         const device = await devices.findOne({name: "Test box"}) ?? {}
+
+        data.timestamp = timestamp
+        device.timestamp = timestamp
 
         if ("dht22" in data && Array.isArray(data.dht22)) {
             data.dht22 = data.dht22.map(v => v.rh > 100 ? ({t: null, rh: null}) : v)
