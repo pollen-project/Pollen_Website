@@ -4,6 +4,7 @@ const express = require('express')
 const cors = require('cors')
 const multer = require('multer')
 const path = require('path')
+const fs = require('fs')
 
 const app = express()
 const port = 3000
@@ -17,15 +18,11 @@ const mongoClient = new MongoClient(mongoURL);
 let history;
 let devices;
 
-// Add timestamp middleware
-app.use((req, res, next) => {
-    req.requestTimestamp = new Date();
-    next();
-});
+const uploadsPath = process.env.UPLOADS_PATH ?? path.join(__dirname, 'uploads/')
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/')
+        cb(null, uploadsPath)
     },
     filename: (req, file, cb) => {
         const deviceName = file.originalname ?? 'unknown'
@@ -33,7 +30,7 @@ const storage = multer.diskStorage({
 
         const filename = deviceName + '_' + timestamp + '.jpg'
 
-        req.body.deviceName = deviceName
+        req.deviceName = deviceName
 
         cb(null, filename)
     }
@@ -107,13 +104,25 @@ async function on_message(topic, message) {
 app.use(cors())
 app.use(express.json())
 
+// Add timestamp middleware
+app.use((req, res, next) => {
+    const metadata = req.body;
+    req.requestTimestamp = metadata?.timestamp ? new Date(metadata.timestamp) : new Date();
+    next();
+});
+
 app.get('/api/devices', async (req, res) => {
     res.json(await devices.find()
         .toArray())
 })
 
 app.get('/api/history', async (req, res) => {
+    const deviceName = req.query.device
     const filters = {}
+
+    if (deviceName) {
+        filters.name = deviceName
+    }
 
     if ("from" in req.query && "until" in req.query) {
         filters.timestamp = {
@@ -133,9 +142,30 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
         const file = req.file
         const metadata = req.body
         const timestamp = req.requestTimestamp
+        const deviceName = req.deviceName
 
         if (!file || !metadata) {
             return res.status(400).json({ error: 'Image file is required.' })
+        }
+
+        const gps_data = metadata.gps ? JSON.parse(metadata.gps) : null
+
+        const latestDeviceData = {
+            name: deviceName,
+            lastImage: file.filename,
+            timestamp,
+        }
+
+        if (metadata.temperature) {
+            latestDeviceData.temperature = metadata.temperature
+        }
+
+        if (metadata.humidity) {
+            latestDeviceData.humidity = metadata.humidity
+        }
+
+        if (gps_data && gps_data.latitude !== 0 && gps_data.longitude !== 0 && gps_data.altitude !== null) {
+            latestDeviceData.gps = gps_data
         }
 
         await devices.updateOne(
@@ -143,20 +173,19 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
                 name: deviceName
             },
             {
-                "$set": {
-                    name: metadata.deviceName,
-                    lastImage: file.filename,
-                    timestamp,
-                },
+                "$set": latestDeviceData,
             },
             {
                 upsert: true
             })
 
         await history.insertOne({
-            name: metadata.deviceName,
+            name: deviceName,
             image: file.filename,
             timestamp,
+            temperature: metadata.temperature,
+            humidity: metadata.humidity,
+            gps: gps_data,
         })
 
         res.sendStatus(200)
@@ -165,6 +194,21 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
         console.error(err)
         res.status(500).json({ error: 'Internal server error' })
     }
+})
+
+app.get('/images/:filename', (req, res) => {
+  const filename = req.params.filename
+  const filePath = path.join(uploadsPath, filename)
+
+  // Check if file exists
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(404).json({ error: 'File not found' })
+    }
+
+    // Serve the file
+    res.sendFile(filePath)
+  })
 })
 
 app.listen(port, () => {
