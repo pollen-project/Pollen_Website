@@ -168,6 +168,10 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
             latestDeviceData.gps = gps_data
         }
 
+        if (metadata.detectedPollenCount) {
+            latestDeviceData.detectedPollenCount = metadata.detectedPollenCount
+        }
+
         await devices.updateOne(
             {
                 name: deviceName
@@ -186,6 +190,7 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
             temperature: metadata.temperature,
             humidity: metadata.humidity,
             gps: gps_data,
+            detectedPollenCount: metadata.detectedPollenCount,
         })
 
         res.sendStatus(200)
