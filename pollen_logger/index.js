@@ -26,9 +26,7 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const deviceName = file.originalname ?? 'unknown'
-        const timestamp = (req.requestTimestamp ?? new Date()).toISOString().slice(0, 19).replaceAll(':', '-')
-
-        const filename = deviceName + '_' + timestamp + '.jpg'
+        const filename = deviceName + '.jpg'
 
         req.deviceName = deviceName
 
@@ -103,13 +101,7 @@ async function on_message(topic, message) {
 
 app.use(cors())
 app.use(express.json())
-
-// Add timestamp middleware
-app.use((req, res, next) => {
-    const metadata = req.body;
-    req.requestTimestamp = metadata?.timestamp ? new Date(metadata.timestamp) : new Date();
-    next();
-});
+app.use(express.urlencoded({ extended: true }))
 
 app.get('/api/devices', async (req, res) => {
     res.json(await devices.find()
@@ -138,40 +130,46 @@ app.get('/api/history', async (req, res) => {
 })
 
 app.post('/api/upload', upload.single('image'), async (req, res) => {
+    const { file, body, deviceName } = req
+
+    if (!file || !body.data) {
+        return res.sendStatus(400)
+    }
+
+    const metadata = JSON.parse(body.data)
+    const timestamp = metadata.timestamp ? new Date(metadata.timestamp) : new Date()
+    const timestampString = timestamp.toISOString().slice(0, 19).replaceAll(':', '-')
+    const filename = deviceName + '_' + timestampString + '.jpg'
+
+    if (file) {
+        fs.renameSync(file.path, file.path.replace(file.filename, filename))
+    }
+
+    const latestDeviceData = {
+        name: deviceName,
+        lastImage: filename,
+        timestamp,
+    }
+
+    if (typeof metadata.temperature === 'number') {
+        latestDeviceData.temperature = metadata.temperature
+    }
+
+    if (typeof metadata.humidity === 'number') {
+        latestDeviceData.humidity = metadata.humidity
+    }
+
+    if (metadata.gps && metadata.gps.latitude !== 0 && metadata.gps.longitude !== 0 && metadata.gps.altitude !== null) {
+        latestDeviceData.gps = metadata.gps
+    }
+
+    if (typeof metadata.detectedPollenCount === 'number') {
+        latestDeviceData.detectedPollenCount = metadata.detectedPollenCount
+        latestDeviceData.estimatedPollenCount = metadata.detectedPollenCount
+        latestDeviceData.detections = metadata.detections
+    }
+
     try {
-        const file = req.file
-        const metadata = req.body
-        const timestamp = req.requestTimestamp
-        const deviceName = req.deviceName
-
-        if (!file || !metadata) {
-            return res.status(400).json({ error: 'Image file is required.' })
-        }
-
-        const gps_data = metadata.gps ? JSON.parse(metadata.gps) : null
-
-        const latestDeviceData = {
-            name: deviceName,
-            lastImage: file.filename,
-            timestamp,
-        }
-
-        if (metadata.temperature) {
-            latestDeviceData.temperature = metadata.temperature
-        }
-
-        if (metadata.humidity) {
-            latestDeviceData.humidity = metadata.humidity
-        }
-
-        if (gps_data && gps_data.latitude !== 0 && gps_data.longitude !== 0 && gps_data.altitude !== null) {
-            latestDeviceData.gps = gps_data
-        }
-
-        if (metadata.detectedPollenCount) {
-            latestDeviceData.detectedPollenCount = metadata.detectedPollenCount
-        }
-
         await devices.updateOne(
             {
                 name: deviceName
@@ -185,20 +183,22 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 
         await history.insertOne({
             name: deviceName,
-            image: file.filename,
+            image: filename,
             timestamp,
             temperature: metadata.temperature,
             humidity: metadata.humidity,
-            gps: gps_data,
+            gps: metadata.gps,
+            detections: metadata.detections,
             detectedPollenCount: metadata.detectedPollenCount,
+            estimatedPollenCount: metadata.detectedPollenCount,
         })
-
-        res.sendStatus(200)
     }
     catch(err) {
         console.error(err)
-        res.status(500).json({ error: 'Internal server error' })
+        return res.status(500).json({ error: 'Internal server error' })
     }
+
+    res.sendStatus(200)
 })
 
 app.get('/images/:filename', (req, res) => {
